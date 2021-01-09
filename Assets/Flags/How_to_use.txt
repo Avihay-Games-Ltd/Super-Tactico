@@ -1,0 +1,17 @@
+How to use flags in your own projects.
+
+1. Make a folder in your project called "Editor"
+2. Place the CreatePlane script in the "Editor" folder
+3. Now you can make an "gameobject - create other - custom plane"
+4. Make sure you make it horizontal, at origin and add collider.
+   our planes/flags have 4 width and length segments and width and length    is 1 x 1.
+5. Make a material and choose the Selfmade/Flagwave shader.
+6. Add your texture in the empty materialslot and assign it to your plane
+7. Rotate the flag and position it to a flagpole or what ever you have in mind.
+8. You can adjust the "wavespeed" in the inspector
+
+In the project you find a material called flag_blanco wich you can use for your own flags.
+
+Have fun with it!
+
+Unitymagic
