@@ -5,7 +5,7 @@ using UnityEngine;
 public class LoadedToolsText : MonoBehaviour
 {
 
-    GameObject Camera;
+    
     GameManager game;
     TMPro.TMP_Text Text;
     Color regColor , currentColor ,onMouseColor;
@@ -13,7 +13,7 @@ public class LoadedToolsText : MonoBehaviour
     GameTool Loaded , Loader;
     void Start()
     {
-        Camera = GameObject.FindWithTag("CameraController");
+        
         game = GameObject.FindWithTag("Game").GetComponent<GameManager>();
         Text = GetComponent<TMPro.TMP_Text>();
         regColor = Text.color;
@@ -21,11 +21,7 @@ public class LoadedToolsText : MonoBehaviour
         Size = new Vector3(this.transform.localScale.x * 0.07f, this.transform.localScale.y * 0.07f, this.transform.localScale.z * 0.07f);
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        transform.rotation = Camera.transform.rotation;
-    }
+    
     
     private void OnMouseDown()
     {

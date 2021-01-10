@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -54,6 +55,7 @@ public class GameOnSameComputer : Game
         {
             TurnPlayerID = 2;
             ResetClickedTile();
+            
             SetTurnDetails();
 
 
@@ -62,23 +64,27 @@ public class GameOnSameComputer : Game
         {
             TurnPlayerID = 1;
             ResetClickedTile();
+            
             SetTurnDetails();
 
 
         }
     }
+
+    
+
     protected override void GameOverCheck()
     {
         foreach(Tile tile in board.GetPlayer1Island())
         {
-            if(tile.GetCurrentStepingGameTool() != null && tile.GetCurrentStepingGameTool().transform.parent.tag =="Flag" && tile.GetCurrentStepingGameTool().GetToolsPlayerId() == 2)
+            if(tile.GetCurrentStepingGameTool() != null && tile.GetCurrentStepingGameTool().GetToolsPlayerId() == 1 && tile.GetCurrentStepingGameTool().GetComponentInParent<Loading>().HasEnemyFlag())
             {
                 SceneManager.LoadScene("Main Menu");
             }
         }
         foreach (Tile tile in board.GetPlayer2Island())
         {
-            if (tile.GetCurrentStepingGameTool() != null && tile.GetCurrentStepingGameTool().transform.parent.tag == "Flag" && tile.GetCurrentStepingGameTool().GetToolsPlayerId() == 1)
+            if (tile.GetCurrentStepingGameTool() != null  && tile.GetCurrentStepingGameTool().GetToolsPlayerId() == 2 && tile.GetCurrentStepingGameTool().GetComponentInParent<Loading>().HasEnemyFlag())
             {
                 SceneManager.LoadScene("Main Menu");
             }

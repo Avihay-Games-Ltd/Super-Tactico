@@ -89,7 +89,7 @@ public class Tile : MonoBehaviour
             game.MoveTo(GetComponent<Tile>());
 
         }
-        if (canBeClicked && game.GetClickedTile() != this)
+        else if (!canWalkTo && canBeClicked && game.GetClickedTile() != this)
         {
             if (gameToolResized)
             {
@@ -102,7 +102,7 @@ public class Tile : MonoBehaviour
             game.SetToolUI(currentStepingGameTool, currentStepingGameTool.GetComponentInParent<Loading>(),true);
 
         }
-        else if (canBeClicked && game.GetClickedTile() == this)
+        else if (!canWalkTo && canBeClicked && game.GetClickedTile() == this)
         {
             game.ResetClickedTile();
             game.SetToolUI(currentStepingGameTool, currentStepingGameTool.GetComponentInParent<Loading>(), false);

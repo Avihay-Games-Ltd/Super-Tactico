@@ -112,6 +112,8 @@ public class ToolMovement : MonoBehaviour
             }
             PosToWalk = Vector3.zero;
             current = Game.Direction.None;
+            game.GetClickedTile().SetCurrentStepingGameTool(null);
+            game.GetTileToWalk().SetCurrentStepingGameTool(GetComponent<GameTool>());
             game.PassTurn();
         }
     }
@@ -133,6 +135,8 @@ public class ToolMovement : MonoBehaviour
             }
             PosToWalk = Vector3.zero;
             current = Game.Direction.None;
+            game.GetClickedTile().SetCurrentStepingGameTool(null);
+            game.GetTileToWalk().SetCurrentStepingGameTool(GetComponent<GameTool>());
             game.PassTurn();
         }
     }
@@ -154,6 +158,8 @@ public class ToolMovement : MonoBehaviour
             }
             PosToWalk = Vector3.zero;
             current = Game.Direction.None;
+            game.GetClickedTile().SetCurrentStepingGameTool(null);
+            game.GetTileToWalk().SetCurrentStepingGameTool(GetComponent<GameTool>());
             game.PassTurn();
         }
     }

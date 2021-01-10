@@ -13,6 +13,7 @@ public class Loading : MonoBehaviour
     List<GameTool> loadedGameTools;
     GameTool ReadyToUnloadTool;
     GameTool Loader;
+    bool HasFlag;
     float HighestTextY;
 
 
@@ -23,7 +24,9 @@ public class Loading : MonoBehaviour
         loadedGameTools = new List<GameTool>();
         ReadyToUnloadTool = null;
         Loader = null;
+        HasFlag = false;
         HighestTextY = 6.0f;
+        
     }
     public int GetLoadCapability()
     {
@@ -33,7 +36,7 @@ public class Loading : MonoBehaviour
     {
         if (ReadyToUnloadTool != null)
         {
-            ReadyToUnloadTool.GetComponentInParent<Loading>().ResetLoadedToolsList();
+
             ReadyToUnloadTool = null;
         }
     }
@@ -55,6 +58,7 @@ public class Loading : MonoBehaviour
 
         return ReadyToUnloadTool;
     }
+    
     public GameTool GetLoader()
     {
         return Loader;
@@ -67,8 +71,20 @@ public class Loading : MonoBehaviour
     {
         ReadyToUnloadTool.GetComponentInParent<Loading>().Load(gametool);
     }
+    public bool HasEnemyFlag()
+    {
+        return HasFlag;
+    }
+    public bool CanBeLoaded()
+    {
+        return canBeLoaded;
+    }
     public bool CanBeLoadTo(GameTool gameTool)
     {
+        if(gameTool.GetName() == "Flag")
+        {
+            return false;
+        }
         if (!canBeLoaded || gameTool.transform.parent.tag == "Soldier")
 
         {
@@ -77,7 +93,7 @@ public class Loading : MonoBehaviour
         else
         {
 
-            if (loadedGameTools.Count + 1 + gameTool.GetComponentInParent<Loading>().loadedGameTools.Count <= loadCapability)
+            if (loadedGameTools.Count + 1 + gameTool.GetComponentInParent<Loading>().loadedGameTools.Count <= gameTool.GetComponentInParent<Loading>().loadCapability)
             {
                 return true;
             }
@@ -102,19 +118,35 @@ public class Loading : MonoBehaviour
    
      public void Load(GameTool gameTool , Tile loadFrom = null)
      {
-        if(gameTool.GetComponentInParent<Loading>().GetLoader() != null)
+        if (gameTool.GetName() != "Flag")
         {
-            gameTool.GetComponentInParent<Loading>().GetLoader().GetComponentInParent<Loading>().UnLoad(gameTool, game.GetClickedTile());
+            if (gameTool.GetComponentInParent<Loading>().GetLoader() != null)
+            {
+                gameTool.GetComponentInParent<Loading>().GetLoader().GetComponentInParent<Loading>().UnLoad(gameTool, game.GetClickedTile());
+            }
+            loadedGameTools.Add(gameTool);
+
+            if (loadFrom != null)
+            {
+                loadFrom.SetCurrentStepingGameTool(null);
+            }
+            gameTool.gameObject.transform.parent.localScale = Vector3.zero;
+            gameTool.gameObject.transform.parent.position = gameObject.transform.parent.position;
+            gameTool.GetComponentInParent<Loading>().SetLoader(GetComponentInParent<GameTool>());
+            game.PassTurn();
         }
-        loadedGameTools.Add(gameTool);
-        
-        if (loadFrom != null)
+        else
         {
-            loadFrom.SetCurrentStepingGameTool(null);
+            loadedGameTools.Add(gameTool);
+            if (loadFrom != null)
+            {
+                loadFrom.SetCurrentStepingGameTool(null);
+            }
+            gameTool.gameObject.transform.parent.localScale = Vector3.zero;
+            gameTool.gameObject.transform.parent.position = gameObject.transform.parent.position;
+            HasFlag = true;
+            
         }
-        gameTool.gameObject.transform.parent.localScale = Vector3.zero;
-        gameTool.GetComponentInParent<Loading>().SetLoader(GetComponentInParent<GameTool>());
-        game.PassTurn();
      }
 
      public void UnLoad(GameTool gameTool , Tile unLoadTo)

@@ -316,7 +316,66 @@ public class GameAI : Game
     private class State
     {
         Node[,] boardState;
-        private class Node
+        public class Tool
+        {
+            int id;
+            int rank;
+            Game.Type type;
+            List<Tool> Loaded;
+            bool CanBeLoad;
+            bool isLoaded;
+            Tool Loader;
+            int LoadCapability;
+
+            public Tool(GameTool gameTool,bool isLoaded,Tool Loader)
+            {
+                this.id = gameTool.GetToolsPlayerId();
+                
+                this.rank = gameTool.GetRank();
+                this.isLoaded = isLoaded;
+                this.Loader = Loader;
+                
+                this.type = gameTool.GetToolType();
+                if (gameTool.GetComponentInParent<Loading>() != null)
+                {
+                    this.CanBeLoad = gameTool.GetComponentInParent<Loading>().CanBeLoaded();
+                    this.LoadCapability = gameTool.GetComponentInParent<Loading>().GetLoadCapability();
+                    this.Loaded = new List<Tool>();
+                    foreach (GameTool gametool in gameTool.GetComponentInParent<Loading>().GetLoadedToolsList())
+                    {
+                        Tool tool = new Tool(gametool,true,this);
+                        this.Loaded.Add(tool);
+                    }
+                }
+            }
+            public int GetID()
+            {
+                return id;
+            }
+            public int GetRank()
+            {
+                return rank;
+            }
+            public Game.Type GetToolType()
+            {
+                return type;
+            }
+            public bool IsLoaded()
+            {
+                return isLoaded;
+            }
+            
+            public bool CanBeLoaded()
+            {
+                return CanBeLoad;
+            }
+            public List<Tool> GetLoadedTools()
+            {
+                return Loaded;
+            }
+
+        }
+        public class Node
         {
             /*
              *Represent the tool in this tile.
@@ -327,22 +386,22 @@ public class GameAI : Game
              *If the tile's type is Sea - the tool can be ship or plane.
              * The Player's flag represent as int.MinValue and the Computer's flag as int.MaxValue;
              */
-            int tool;
+            Tool tool;
             Game.Type type;
             string fieldType;
 
-            public Node(int tool, Game.Type type, string fieldType)
+            public Node(GameTool tool, Game.Type type, string fieldType)
             {
-                this.tool = tool;
+                this.tool = new Tool(tool,false,null);
                 this.type = type;
                 this.fieldType = fieldType;
             }
 
-            public void SetTool(int tool)
+            public void SetTool(Tool tool)
             {
                 this.tool = tool;
             }
-            public int GetTool()
+            public Tool GetTool()
             {
                 return tool;
             }
@@ -375,18 +434,10 @@ public class GameAI : Game
             {
                 row = pair.Key.GetRowNum();
                 tile = pair.Key.GetTileNum();
-                if (pair.Key.GetCurrentStepingGameTool() != null)
-                {
-                    rank = pair.Key.GetCurrentStepingGameTool().GetToolsPlayerId() == 1 ? -pair.Key.GetCurrentStepingGameTool().GetRank() : pair.Key.GetCurrentStepingGameTool().GetRank();
-                }
-                else
-                {
-                    rank = 0;
-                }
-
+               
                 fieldType = pair.Key.GetFieldType();
                 type = pair.Key.GetType();
-                boardState[row, tile] = new Node(rank, type, fieldType);
+                boardState[row, tile] = new Node(pair.Key.GetCurrentStepingGameTool(), type, fieldType);
             }
 
         }
@@ -395,27 +446,63 @@ public class GameAI : Game
             boardState = new Node[21, 21];
         }
 
-        public int GetToolInIndex(int row, int tile)
+        public void ExcuteAction(Action action)
+        {
+            if(boardState[action.GetNewRow(),action.GetNewTile()].GetTool() == null)
+            {
+                SetToolInIndex(action.GetNewRow(), action.GetNewTile(), boardState[action.GetRow(), action.GetTile()].GetTool());
+                SetToolInIndex(action.GetRow(), action.GetTile(), null);
+            }
+            else
+            {
+                if(boardState[action.GetNewRow(), action.GetNewTile()].GetTool().GetID() != boardState[action.GetRow(), action.GetTile()].GetTool().GetID())
+                {
+                    if(boardState[action.GetNewRow(), action.GetNewTile()].GetTool().GetRank() == boardState[action.GetRow(), action.GetTile()].GetTool().GetRank())
+                    {
+                        SetToolInIndex(action.GetNewRow(), action.GetNewTile(),null);
+                        SetToolInIndex(action.GetRow(), action.GetTile(), null);
+                    }
+                    else
+                    {
+                        if(boardState[action.GetNewRow(), action.GetNewTile()].GetTool().GetRank() > boardState[action.GetRow(), action.GetTile()].GetTool().GetRank())
+                        {
+                            SetToolInIndex(action.GetNewRow(), action.GetNewTile(), boardState[action.GetRow(), action.GetTile()].GetTool());
+                            SetToolInIndex(action.GetRow(), action.GetTile(), null);
+                        }
+                        else
+                        {
+                            
+                            SetToolInIndex(action.GetRow(), action.GetTile(), null);
+                        }
+                    }
+
+                    
+                }
+                else
+                {
+                    
+                }
+            }
+        }
+
+        public Tool GetToolInIndex(int row, int tile)
         {
             return boardState[row, tile].GetTool();
         }
-        public void SetToolInIndex(int row, int tile, int tool)
+        public void SetToolInIndex(int row, int tile, Tool tool)
         {
             boardState[row, tile].SetTool(tool);
         }
     }
 
-    private class Action
+    public class Action
     {
-        public enum ActionType
-        {
-            Movement, Battle, Loading
-        }
+      
         Direction direction;
         int Row, Tile;
         int newRow, newTile;
 
-        public Action(int Row, int Tile, Direction direction)
+        public Action(int Row, int Tile, Direction direction, int numOfTiles)
         {
             this.direction = direction;
             this.Row = Row;
@@ -423,23 +510,23 @@ public class GameAI : Game
 
             if (direction == Direction.Right)
             {
-                newRow = Row + 1;
+                newRow = Row + numOfTiles;
                 newTile = Tile;
             }
             else if (direction == Direction.Left)
             {
-                newRow = Row - 1;
+                newRow = Row - numOfTiles;
                 newTile = Tile;
             }
             else if (direction == Direction.Up)
             {
                 newRow = Row;
-                newTile = Tile + 1;
+                newTile = Tile + numOfTiles;
             }
             else if (direction == Direction.Down)
             {
                 newRow = Row;
-                newTile = Tile - 1;
+                newTile = Tile - numOfTiles;
             }
 
 
@@ -462,7 +549,7 @@ public class GameAI : Game
             return newTile;
         }
 
-        public static List<Action> GetAllPosibileActions(State state)
+      /*  public static List<Action> GetAllPosibileActions(State state)
         {
             List<Action> AllPosibileActions = new List<Action>();
 
@@ -479,7 +566,7 @@ public class GameAI : Game
 
 
             return AllPosibileActions;
-        }
+        }*/
 
 
 

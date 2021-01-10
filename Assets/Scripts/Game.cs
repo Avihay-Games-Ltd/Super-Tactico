@@ -1,4 +1,5 @@
 ﻿
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -537,9 +538,26 @@ public abstract class Game
                         {
                             if (temp.GetCurrentStepingGameTool().GetToolsPlayerId() != ClickedTile.GetCurrentStepingGameTool().GetToolsPlayerId())
                             {
-                                temp.SetCanWalkTo();
-                                CanWalkToTiles.Add(temp);
-                                break;
+                                if(temp.GetCurrentStepingGameTool().GetName() != "Flag")
+                                {
+                                    temp.SetCanWalkTo();
+                                    CanWalkToTiles.Add(temp);
+                                    break;
+                                }
+                                else
+                                {
+                                    if(ClickedTile.GetCurrentStepingGameTool().transform.parent.tag == "Soldier")
+                                    {
+                                        temp.SetCanWalkTo();
+                                        CanWalkToTiles.Add(temp);
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
+                                }
+                                
                             }
                             else if (ClickedTile.GetCurrentStepingGameTool().GetComponentInParent<Loading>().CanBeLoadTo(temp.GetCurrentStepingGameTool()))
                             {
@@ -554,7 +572,7 @@ public abstract class Game
                         }
 
                     }
-                    else if (temp.GetCurrentStepingGameTool() != null && temp.GetCurrentStepingGameTool().GetToolsPlayerId() == ClickedTile.GetCurrentStepingGameTool().GetToolsPlayerId())
+                    else if (temp.GetCurrentStepingGameTool() != null && temp.GetCurrentStepingGameTool().GetToolsPlayerId() == ClickedTile.GetCurrentStepingGameTool().GetToolsPlayerId() && ClickedTile.GetCurrentStepingGameTool().GetComponentInParent<Loading>().CanBeLoadTo(temp.GetCurrentStepingGameTool()))
                     {
                         temp.SetCanWalkTo();
                         CanWalkToTiles.Add(temp);
@@ -820,10 +838,13 @@ public abstract class Game
     }
     protected void Loading(GameTool Loader, GameTool Loaded, Tile FromTile,Direction direction, int tilesToPass)
     {
+        
         ResetCanBeClickedTiles();
+        DeactivateTileMovementOptions();
         Loader.GetComponentInParent<Loading>().Load(Loaded, FromTile);
     }
 
+    
 
 
 

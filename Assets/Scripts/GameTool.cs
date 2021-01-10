@@ -12,6 +12,11 @@ public class GameTool : MonoBehaviour
     Game.Type type;
     [SerializeField]
     int ToolID;
+    [SerializeField]
+    string Name;
+    [SerializeField]
+    string Army;
+    
     Vector3 resizeFactor;
     bool IDseted = false;
     
@@ -29,6 +34,14 @@ public class GameTool : MonoBehaviour
         
             return playerID;
         
+    }
+    public string GetName()
+    {
+        return Name;
+    }
+    public string GetArmy()
+    {
+        return Army;
     }
     public void SetToolsPlayerId(int playerID)
     {

@@ -19,6 +19,10 @@ public class GameManager : MonoBehaviour
         //Game.SetGameType(Game.GameType.GameOnSameComputer); 
         game = Game.GetGame(Tools,ToolsLoadingTitles,GameUI);
     }
+    private void Update()
+    {
+        print(game.GetTurnPlayerID());
+    }
 
     public void PassTurn()
     {

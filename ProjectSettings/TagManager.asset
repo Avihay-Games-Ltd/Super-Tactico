@@ -14,6 +14,8 @@ TagManager:
   - CameraController
   - Flag
   - 2DCamera
+  - GameSurface
+  - Ship
   layers:
   - Default
   - TransparentFX

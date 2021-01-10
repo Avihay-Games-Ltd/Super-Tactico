@@ -70,17 +70,18 @@ public class CameraRotation : MonoBehaviour
                 tool1.transform.localRotation = Tool1.transform.localRotation;
                 tool1.transform.localScale = new Vector3(30f, 30f, 30f);
             }
-            PlayerTool1.gameObject.transform.Find("ToolName").gameObject.GetComponent<TMPro.TMP_Text>().text = "Name : "+gameTool.transform.parent.name;
+            PlayerTool1.gameObject.transform.Find("ToolName").gameObject.GetComponent<TMPro.TMP_Text>().text = "Name : "+gameTool.GetName();
             PlayerTool1.gameObject.transform.Find("Rank").gameObject.GetComponent<TMPro.TMP_Text>().text = "Rank : " + gameTool.GetRank();
+            PlayerTool1.gameObject.transform.Find("Army").gameObject.GetComponent<TMPro.TMP_Text>().text = "Army : " + gameTool.GetArmy();
 
-            
+
             if (gameToolLoading != null)
             {
                 PlayerTool1.gameObject.transform.Find("Load").gameObject.GetComponent<TMPro.TMP_Text>().text = "Load Capability : " + gameToolLoading.GetLoadCapability();
                 List<GameTool> loaded = gameToolLoading.GetLoadedToolsList();
                 for (int i = 1; i <= loaded.Count; i++)
                 {
-                    PlayerTool1.gameObject.transform.Find("LoadedTool" + i).gameObject.GetComponent<TMPro.TMP_Text>().text = loaded[i - 1].transform.parent.name;
+                    PlayerTool1.gameObject.transform.Find("LoadedTool" + i).gameObject.GetComponent<TMPro.TMP_Text>().text = loaded[i - 1].GetName();
                     PlayerTool1.gameObject.transform.Find("LoadedTool" + i).GetComponent<LoadedToolsText>().SetLoaded(loaded[i - 1]);
                     PlayerTool1.gameObject.transform.Find("LoadedTool" + i).GetComponent<LoadedToolsText>().SetLoader(gameTool);
                 }
@@ -99,16 +100,17 @@ public class CameraRotation : MonoBehaviour
                 tool2.transform.localScale = new Vector3(30f, 30f, 30f);
                 // tool2.transform.trv
             }
-            PlayerTool2.gameObject.transform.Find("ToolName").gameObject.GetComponent<TMPro.TMP_Text>().text = "Name : " + gameTool.transform.parent.name;
+            PlayerTool2.gameObject.transform.Find("ToolName").gameObject.GetComponent<TMPro.TMP_Text>().text = "Name : " + gameTool.GetName();
             PlayerTool2.gameObject.transform.Find("Rank").gameObject.GetComponent<TMPro.TMP_Text>().text = "Rank : " + gameTool.GetRank();
-            
+            PlayerTool2.gameObject.transform.Find("Army").gameObject.GetComponent<TMPro.TMP_Text>().text = "Army : " + gameTool.GetArmy();
+
             if (gameToolLoading != null)
             {
                 PlayerTool2.gameObject.transform.Find("Load").gameObject.GetComponent<TMPro.TMP_Text>().text = "Load Capability : " + gameToolLoading.GetLoadCapability();
                 List<GameTool> loaded = gameToolLoading.GetLoadedToolsList();
                 for (int i = 1; i <= loaded.Count; i++)
                 {
-                    PlayerTool2.gameObject.transform.Find("LoadedTool" + i).gameObject.GetComponent<TMPro.TMP_Text>().text = loaded[i - 1].transform.parent.name;
+                    PlayerTool2.gameObject.transform.Find("LoadedTool" + i).gameObject.GetComponent<TMPro.TMP_Text>().text = loaded[i - 1].GetName();
                     PlayerTool2.gameObject.transform.Find("LoadedTool" + i).GetComponent<LoadedToolsText>().SetLoaded(loaded[i - 1]);
                     PlayerTool2.gameObject.transform.Find("LoadedTool" + i).GetComponent<LoadedToolsText>().SetLoader(gameTool);
                 }
@@ -126,7 +128,7 @@ public class CameraRotation : MonoBehaviour
             }
             PlayerTool1.gameObject.transform.Find("ToolName").gameObject.GetComponent<TMPro.TMP_Text>().text = "";
             PlayerTool1.gameObject.transform.Find("Rank").gameObject.GetComponent<TMPro.TMP_Text>().text = "";
-
+            PlayerTool1.gameObject.transform.Find("Army").gameObject.GetComponent<TMPro.TMP_Text>().text = "";
             PlayerTool1.gameObject.transform.Find("Load").gameObject.GetComponent<TMPro.TMP_Text>().text = "";
             
             for (int i=1; i <= 6; i++)
@@ -152,6 +154,7 @@ public class CameraRotation : MonoBehaviour
             PlayerTool2.gameObject.transform.Find("ToolName").gameObject.GetComponent<TMPro.TMP_Text>().text = "";
             PlayerTool2.gameObject.transform.Find("Rank").gameObject.GetComponent<TMPro.TMP_Text>().text = "";
             PlayerTool2.gameObject.transform.Find("Load").gameObject.GetComponent<TMPro.TMP_Text>().text = "";
+            PlayerTool2.gameObject.transform.Find("Army").gameObject.GetComponent<TMPro.TMP_Text>().text = "";
             for (int i = 1; i <= 6; i++)
             {
                 PlayerTool2.gameObject.transform.Find("LoadedTool"+i).gameObject.GetComponent<TMPro.TMP_Text>().text = "";
