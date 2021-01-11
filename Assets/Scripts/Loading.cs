@@ -118,21 +118,22 @@ public class Loading : MonoBehaviour
    
      public void Load(GameTool gameTool , Tile loadFrom = null)
      {
+        Debug.Log(gameTool.transform.position);
         if (gameTool.GetName() != "Flag")
         {
-            if (gameTool.GetComponentInParent<Loading>().GetLoader() != null)
-            {
-                gameTool.GetComponentInParent<Loading>().GetLoader().GetComponentInParent<Loading>().UnLoad(gameTool, game.GetClickedTile());
-            }
+            
             loadedGameTools.Add(gameTool);
 
             if (loadFrom != null)
             {
                 loadFrom.SetCurrentStepingGameTool(null);
             }
-            gameTool.gameObject.transform.parent.localScale = Vector3.zero;
-            gameTool.gameObject.transform.parent.position = gameObject.transform.parent.position;
+         Debug.Log(gameTool.transform.position);
+            gameTool.gameObject.transform.localScale = Vector3.zero;
+            //gameTool.gameObject.transform.parent.position = transform.parent.position;
+            //gameTool.gameObject.transform.parent.parent = transform.parent;
             gameTool.GetComponentInParent<Loading>().SetLoader(GetComponentInParent<GameTool>());
+         Debug.Log(gameTool.transform.position);
             game.PassTurn();
         }
         else
@@ -142,21 +143,36 @@ public class Loading : MonoBehaviour
             {
                 loadFrom.SetCurrentStepingGameTool(null);
             }
-            gameTool.gameObject.transform.parent.localScale = Vector3.zero;
-            gameTool.gameObject.transform.parent.position = gameObject.transform.parent.position;
+
+            gameTool.gameObject.transform.localScale = Vector3.zero;
+            //gameTool.gameObject.transform.parent.position = transform.parent.position;
+            //gameTool.gameObject.transform.parent.parent = transform.parent;
             HasFlag = true;
             
         }
-     }
+        Debug.Log(gameTool.transform.position);
+    }
 
-     public void UnLoad(GameTool gameTool , Tile unLoadTo)
+     public void UnLoad(GameTool gameTool , Tile unLoadTo = null)
      {
+        if (gameTool.GetName().Contains("Boat"))
+        {
+            gameTool.gameObject.transform.localScale = Vector3.one * 0.5f;
+
+        }
+        else
+        {
+            gameTool.gameObject.transform.localScale = Vector3.one * 1.4f;
+        }
+        //gameTool.gameObject.transform.parent.parent = null;
         loadedGameTools.Remove(gameTool);
+        if (unLoadTo != null)
+        {
+            gameTool.gameObject.transform.parent.position = unLoadTo.GetPosition();
+            unLoadTo.SetCurrentStepingGameTool(gameTool);
+        }
+
         
-        gameTool.gameObject.transform.parent.position = unLoadTo.GetPosition();
-        gameTool.gameObject.transform.parent.localScale = Vector3.one;
-        unLoadTo.SetCurrentStepingGameTool(gameTool);
-        game.PassTurn();
 
     }
 

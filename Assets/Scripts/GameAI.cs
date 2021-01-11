@@ -157,7 +157,7 @@ public class GameAI : Game
             }
             else
             {
-                Loading(tileToMove.GetCurrentStepingGameTool(), currentTile.GetCurrentStepingGameTool(), currentTile, direction, tilesToPass);
+                tileToMove.GetCurrentStepingGameTool().GetComponentInParent<Loading>().Load(currentTile.GetCurrentStepingGameTool(),currentTile);
             }
 
         }
@@ -897,7 +897,7 @@ public class GameAI : Game
 
 
 
-                                        node = GetNodeInDirection(node.GetNodeRow(),node.GetNodeNum(),direction)
+                                        node = GetNodeInDirection(node.GetNodeRow(), node.GetNodeNum(), direction);
                                     } while (node != null && !HasTilesLimit);
 
 
