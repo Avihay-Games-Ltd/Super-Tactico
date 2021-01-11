@@ -3026,6 +3026,8 @@ MonoBehaviour:
   rank: 1
   type: 2
   ToolID: 0
+  Name: 
+  Army: 
 --- !u!114 &875082310014770299
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3039,7 +3041,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prevoius: 0
-  speed: 8
+  speed: 20
 --- !u!114 &2721314564246064298
 MonoBehaviour:
   m_ObjectHideFlags: 0

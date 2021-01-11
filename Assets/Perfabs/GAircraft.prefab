@@ -987,7 +987,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prevoius: 2
-  speed: 10
+  speed: 20
 --- !u!114 &2494378121540008280
 MonoBehaviour:
   m_ObjectHideFlags: 0

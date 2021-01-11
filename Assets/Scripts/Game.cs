@@ -682,6 +682,18 @@ public abstract class Game
 
         return null;
     }
+    public Tile FindTile(int row , int tile)
+    {
+        foreach (Tile Tile in board.GetAllTiles())
+        {
+            if (Tile.GetRowNum() == row && Tile.GetTileNum() == tile)
+            {
+                return Tile;
+            }
+        }
+
+        return null;
+    }
     protected void ResetCanBeClickedTiles()
     {
         foreach(Tile tile in CanBeClickedTiles)

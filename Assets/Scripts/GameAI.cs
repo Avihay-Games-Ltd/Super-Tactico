@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 
 public class GameAI : Game
 {
-    List<Direction> directions = new List<Direction>();
+     List<Direction> directions = new List<Direction>();
     Dictionary<int, KeyValuePair<GameTool, List<Tile>>> AllPosibileActions;
 
 
@@ -104,18 +104,11 @@ public class GameAI : Game
 
     private void AI_Play()
     {
-        AllPosibileActions = GetAllPosibileActions();
+        State.Action Action = Minimax();
         
-     
-        KeyValuePair<GameTool, List<Tile>> RandomToolActions = AllPosibileActions[Random.Range(0, AllPosibileActions.Count)];
-        Debug.Log(RandomToolActions.Key.transform.parent.name + " ");
-        foreach(Tile tile in RandomToolActions.Value)
-        {
-            Debug.Log(tile.GetRowNum() + "   " + tile.GetTileNum());
-        }
         Direction direction = Direction.None;
-        Tile currentTile = FindTile(RandomToolActions.Key);
-        Tile tileToMove = RandomToolActions.Value[Random.Range(0, RandomToolActions.Value.Count)];
+        Tile currentTile = FindTile(Action.GetRow(),Action.GetTile());
+        Tile tileToMove = FindTile(Action.GetNewRow(), Action.GetNewTile());
         ClickedTile = currentTile;
         TileToWalk = tileToMove;
         if (tileToMove.GetRowNum() > currentTile.GetRowNum())
@@ -307,15 +300,94 @@ public class GameAI : Game
 
 
 
-
-
-
-
-
-
-    private class State
+    public  State.Action Minimax()
     {
+        int depth = 1;
+        State state = new State(board);
+        int MaxAction = -Mathf.RoundToInt(Mathf.Infinity);
+        State.Action Action = null;
+        List<State.Action> PosibleActions = state.GetAllPosibileActions(2);
+        foreach(State.Action action in PosibleActions)
+        {
+            int val = Min(new State(state, action), depth + 1);
+            if( val > MaxAction)
+            {
+                MaxAction = val;
+                Action = action;
+            }
+        }
+
+        return Action;
+    }
+    public int Max(State state, int depth)
+    {
+        Debug.Log("Min");
+        if (state.isEndState())
+        {
+            return state.GetendStateValue();
+        }
+
+        if (depth == 2)
+        {
+            return state.GetHeurisitic();
+        }
+        int MaxAction = -Mathf.RoundToInt(Mathf.Infinity);
+
+        foreach(State.Action action in state.GetAllPosibileActions(2))
+        {
+            int val = Min(new State(state, action), depth + 1);
+
+            if(val > MaxAction)
+            {
+                MaxAction = val;
+            }
+        }
+        return MaxAction;
+    }
+    public int Min(State state, int depth)
+    {
+        Debug.Log("Min");
+        if (state.isEndState())
+        {
+            return state.GetendStateValue();
+        }
+
+        if(depth == 2)
+        {
+            return state.GetHeurisitic();
+        }
+        int MinAction = Mathf.RoundToInt(Mathf.Infinity);
+
+        foreach (State.Action action in state.GetAllPosibileActions(1))
+        {
+            int val = Max(new State(state, action), depth + 1);
+
+            if (val < MinAction)
+            {
+                MinAction = val;
+            }
+        }
+
+        return MinAction;
+    }
+
+
+
+
+
+
+
+
+
+
+    public class State
+    {
+
+        static List<Direction> directions = new List<Direction>(new Direction[] {Direction.Right, Direction.Left, Direction.Up, Direction.Down});
         Node[,] boardState;
+        int heuristic = 0;
+        int endStateValue = 0;
+
         public class Tool
         {
             int id;
@@ -329,24 +401,28 @@ public class GameAI : Game
 
             public Tool(GameTool gameTool,bool isLoaded,Tool Loader)
             {
-                this.id = gameTool.GetToolsPlayerId();
                 
-                this.rank = gameTool.GetRank();
-                this.isLoaded = isLoaded;
-                this.Loader = Loader;
-                
-                this.type = gameTool.GetToolType();
-                if (gameTool.GetComponentInParent<Loading>() != null)
-                {
-                    this.CanBeLoad = gameTool.GetComponentInParent<Loading>().CanBeLoaded();
-                    this.LoadCapability = gameTool.GetComponentInParent<Loading>().GetLoadCapability();
-                    this.Loaded = new List<Tool>();
-                    foreach (GameTool gametool in gameTool.GetComponentInParent<Loading>().GetLoadedToolsList())
+                    this.id = gameTool.GetToolsPlayerId();
+
+                    this.rank = gameTool.GetRank();
+                    this.isLoaded = isLoaded;
+                    this.Loader = Loader;
+
+                    this.type = gameTool.GetToolType();
+                    if (gameTool.GetComponentInParent<Loading>() != null)
                     {
-                        Tool tool = new Tool(gametool,true,this);
-                        this.Loaded.Add(tool);
+                        this.CanBeLoad = gameTool.GetComponentInParent<Loading>().CanBeLoaded();
+                        this.LoadCapability = gameTool.GetComponentInParent<Loading>().GetLoadCapability();
+                        this.Loaded = new List<Tool>();
+                        foreach (GameTool gametool in gameTool.GetComponentInParent<Loading>().GetLoadedToolsList())
+                        {
+                            Tool tool = new Tool(gametool, true, this);
+                            this.Loaded.Add(tool);
+                        }
                     }
-                }
+                
+               
+
             }
             public int GetID()
             {
@@ -369,6 +445,25 @@ public class GameAI : Game
             {
                 return CanBeLoad;
             }
+            public void LoadTool(Tool tool)
+            {
+                Loaded.Add(tool);
+            }
+            public void UnLoadTool(Tool tool)
+            {
+                Loaded.Remove(tool);
+            }
+            public bool HasFlag()
+            {
+                foreach(Tool tool in Loaded)
+                {
+                    if(tool.GetRank() == 0)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
             public List<Tool> GetLoadedTools()
             {
                 return Loaded;
@@ -389,23 +484,46 @@ public class GameAI : Game
             Tool tool;
             Game.Type type;
             string fieldType;
+            int row,tile;
 
-            public Node(GameTool tool, Game.Type type, string fieldType)
+            public Node(GameTool tool, Game.Type type, string fieldType , int row ,int tile)
             {
-                this.tool = new Tool(tool,false,null);
+                if (tool != null)
+                {
+                    this.tool = new Tool(tool, false, null);
+                }
+                else this.tool = null;
                 this.type = type;
                 this.fieldType = fieldType;
+                this.row = row;
+                this.tile = tile;
+            }
+            public Node(Tool tool, Game.Type type, string fieldType , int row , int tile)
+            {
+                this.tool = tool;
+                this.type = type;
+                this.fieldType = fieldType;
+                this.row = row;
+                this.tile = tile;
             }
 
             public void SetTool(Tool tool)
             {
                 this.tool = tool;
             }
+            public int GetNodeRow()
+            {
+                return row;
+            }
+            public int GetNodeNum()
+            {
+                return tile;
+            }
             public Tool GetTool()
             {
                 return tool;
             }
-            public Game.Type GetType()
+            public Game.Type GetTileType()
             {
                 return type;
             }
@@ -417,10 +535,74 @@ public class GameAI : Game
 
 
         }
-        public enum Turn
+
+
+
+
+
+        public class Action
         {
-            Player1 , Player2
+
+            Direction direction;
+            int Row, Tile;
+            int newRow, newTile;
+
+            public Action(int Row, int Tile, Direction direction, int numOfTiles)
+            {
+                this.direction = direction;
+                this.Row = Row;
+                this.Tile = Tile;
+
+                if (direction == Direction.Right)
+                {
+                    newRow = Row + numOfTiles;
+                    newTile = Tile;
+                }
+                else if (direction == Direction.Left)
+                {
+                    newRow = Row - numOfTiles;
+                    newTile = Tile;
+                }
+                else if (direction == Direction.Up)
+                {
+                    newRow = Row;
+                    newTile = Tile + numOfTiles;
+                }
+                else if (direction == Direction.Down)
+                {
+                    newRow = Row;
+                    newTile = Tile - numOfTiles;
+                }
+
+
+            }
+
+            public int GetRow()
+            {
+                return Row;
+            }
+            public int GetTile()
+            {
+                return Tile;
+            }
+            public int GetNewRow()
+            {
+                return newRow;
+            }
+            public int GetNewTile()
+            {
+                return newTile;
+            }
+
+
+
+
+
         }
+        /*  public enum Turn
+          {
+              Player1 , Player2
+          }*/
 
 
         public State(Board board)
@@ -437,14 +619,189 @@ public class GameAI : Game
                
                 fieldType = pair.Key.GetFieldType();
                 type = pair.Key.GetType();
-                boardState[row, tile] = new Node(pair.Key.GetCurrentStepingGameTool(), type, fieldType);
+                boardState[row, tile] = new Node(pair.Key.GetCurrentStepingGameTool(), type, fieldType,row,tile);
             }
 
         }
         public State(State state)
         {
-            boardState = new Node[21, 21];
+            this.boardState = new Node[21, 21];
+            for(int i = 1; i < 21; i++)
+            {
+                for(int j = 1; j < 21; j++)
+                {
+                    this.boardState[i, j] = new Node(state.boardState[i, j].GetTool(), state.boardState[i, j].GetTileType(), state.boardState[i, j].GetFieldType(),i,j);
+                }
+            }
+
+
+            foreach (Node node in this.boardState)
+            {
+                Tool tool = node.GetTool();
+                if (tool != null)
+                {
+
+
+                    if (tool.GetRank() == 1)
+                    {
+                        heuristic += tool.GetID() == 2 ? 70 : -70;
+                    }
+                    else if (tool.GetRank() == 2)
+                    {
+                        heuristic += tool.GetID() == 2 ? 100 : -100;
+                    }
+                    else if (tool.GetToolType() == Type.Land && tool.GetRank() == 3)
+                    {
+                        heuristic += tool.GetID() == 2 ? 30 : -30;
+                    }
+                    else if (tool.GetToolType() == Type.Land && tool.GetRank() == 4)
+                    {
+                        heuristic += tool.GetID() == 2 ? 40 : -40;
+                    }
+                    else if (tool.GetToolType() == Type.Land && tool.GetRank() == 5)
+                    {
+                        heuristic += tool.GetID() == 2 ? 60 : -60;
+                    }
+                    else if (tool.GetToolType() == Type.Land && tool.GetRank() == 6)
+                    {
+                        heuristic += tool.GetID() == 2 ? 80 : -80;
+                    }
+                    else if (tool.GetToolType() == Type.Sea && tool.GetRank() == 3)
+                    {
+                        heuristic += tool.GetID() == 2 ? 30 : -30;
+                    }
+                    else if (tool.GetToolType() == Type.Sea && tool.GetRank() == 4)
+                    {
+                        heuristic += tool.GetID() == 2 ? 80 : -80;
+                    }
+                    else if (tool.GetToolType() == Type.Sea && tool.GetRank() == 5)
+                    {
+                        heuristic += tool.GetID() == 2 ? 120 : -120;
+                    }
+                    else if (tool.GetToolType() == Type.Sea && tool.GetRank() == 6)
+                    {
+                        heuristic += tool.GetID() == 2 ? 180 : -180;
+                    }
+                    else if (tool.GetRank() == 7)
+                    {
+                        heuristic += tool.GetID() == 2 ? 200 : -200;
+                    }
+                    else if (tool.GetRank() == 8)
+                    {
+                        heuristic += tool.GetID() == 2 ? 300 : -300;
+                    }
+                    else if (tool.GetRank() == 9)
+                    {
+                        heuristic += tool.GetID() == 2 ? 400 : -400;
+                    }
+                    else if (tool.GetRank() == 10)
+                    {
+                        heuristic += tool.GetID() == 2 ? 600 : -600;
+                    }
+
+
+
+
+                    if (tool.HasFlag())
+                    {
+                        heuristic += tool.GetID() == 2 ? 1500 : -1500;
+                    }
+                }
+
+
+            }
         }
+        public State(State state, Action action)
+        {
+            this.boardState = new Node[21, 21];
+            for (int i = 1; i < 21; i++)
+            {
+                for (int j = 1; j < 21; j++)
+                {
+                    this.boardState[i, j] = new Node(state.boardState[i, j].GetTool(), state.boardState[i, j].GetTileType(), state.boardState[i, j].GetFieldType(),i,j);
+                }
+            }
+
+            this.ExcuteAction(action);
+
+
+            foreach (Node node in this.boardState)
+            {
+                Tool tool = node.GetTool();
+                if (tool != null)
+                {
+
+
+                    if (tool.GetRank() == 1)
+                    {
+                        heuristic += tool.GetID() == 2 ? 70 : -70;
+                    }
+                    else if (tool.GetRank() == 2)
+                    {
+                        heuristic += tool.GetID() == 2 ? 100 : -100;
+                    }
+                    else if (tool.GetToolType() == Type.Land && tool.GetRank() == 3)
+                    {
+                        heuristic += tool.GetID() == 2 ? 30 : -30;
+                    }
+                    else if (tool.GetToolType() == Type.Land && tool.GetRank() == 4)
+                    {
+                        heuristic += tool.GetID() == 2 ? 40 : -40;
+                    }
+                    else if (tool.GetToolType() == Type.Land && tool.GetRank() == 5)
+                    {
+                        heuristic += tool.GetID() == 2 ? 60 : -60;
+                    }
+                    else if (tool.GetToolType() == Type.Land && tool.GetRank() == 6)
+                    {
+                        heuristic += tool.GetID() == 2 ? 80 : -80;
+                    }
+                    else if (tool.GetToolType() == Type.Sea && tool.GetRank() == 3)
+                    {
+                        heuristic += tool.GetID() == 2 ? 30 : -30;
+                    }
+                    else if (tool.GetToolType() == Type.Sea && tool.GetRank() == 4)
+                    {
+                        heuristic += tool.GetID() == 2 ? 80 : -80;
+                    }
+                    else if (tool.GetToolType() == Type.Sea && tool.GetRank() == 5)
+                    {
+                        heuristic += tool.GetID() == 2 ? 120 : -120;
+                    }
+                    else if (tool.GetToolType() == Type.Sea && tool.GetRank() == 6)
+                    {
+                        heuristic += tool.GetID() == 2 ? 180 : -180;
+                    }
+                    else if (tool.GetRank() == 7)
+                    {
+                        heuristic += tool.GetID() == 2 ? 200 : -200;
+                    }
+                    else if (tool.GetRank() == 8)
+                    {
+                        heuristic += tool.GetID() == 2 ? 300 : -300;
+                    }
+                    else if (tool.GetRank() == 9)
+                    {
+                        heuristic += tool.GetID() == 2 ? 400 : -400;
+                    }
+                    else if (tool.GetRank() == 10)
+                    {
+                        heuristic += tool.GetID() == 2 ? 600 : -600;
+                    }
+
+
+
+
+                    if (tool.HasFlag())
+                    {
+                        heuristic += tool.GetID() == 2 ? 1500 : -1500;
+                    }
+                }
+
+
+            }
+        }
+
 
         public void ExcuteAction(Action action)
         {
@@ -457,7 +814,13 @@ public class GameAI : Game
             {
                 if(boardState[action.GetNewRow(), action.GetNewTile()].GetTool().GetID() != boardState[action.GetRow(), action.GetTile()].GetTool().GetID())
                 {
-                    if(boardState[action.GetNewRow(), action.GetNewTile()].GetTool().GetRank() == boardState[action.GetRow(), action.GetTile()].GetTool().GetRank())
+                    if(boardState[action.GetNewRow(), action.GetNewTile()].GetTool().GetRank() == 0)
+                    {
+                        boardState[action.GetRow(), action.GetTile()].GetTool().LoadTool(boardState[action.GetNewRow(), action.GetNewTile()].GetTool());
+                        SetToolInIndex(action.GetNewRow(), action.GetNewTile(), boardState[action.GetRow(), action.GetTile()].GetTool());
+                        SetToolInIndex(action.GetRow(), action.GetTile(), null);
+                    }
+                    else if(boardState[action.GetNewRow(), action.GetNewTile()].GetTool().GetRank() == boardState[action.GetRow(), action.GetTile()].GetTool().GetRank())
                     {
                         SetToolInIndex(action.GetNewRow(), action.GetNewTile(),null);
                         SetToolInIndex(action.GetRow(), action.GetTile(), null);
@@ -485,6 +848,102 @@ public class GameAI : Game
             }
         }
 
+
+        public List<Action> GetAllPosibileActions(int PlayerTurnID)
+        {
+            List<Action> AllPosibileActions = new List<Action>();
+            bool HasTilesLimit = true;
+
+            for (int i = 1; i < 21; i++)
+            {
+                for (int j = 1; j < 21; j++)
+                {
+                    if (boardState[i, j].GetTool() != null)
+                    {
+
+
+
+
+
+                        if (boardState[i, j].GetTool().GetID() != PlayerTurnID || boardState[i, j].GetTool().GetRank() == 0)
+                        {
+                            continue;
+                        }
+
+                        else
+                        {
+                            if(boardState[i, j].GetTool().GetRank() == 1 || boardState[i, j].GetTool().GetRank() == 2)
+                            {
+                                HasTilesLimit = false;
+                            }
+                            else
+                            {
+                                HasTilesLimit = true;
+                            }
+
+
+                           foreach(Direction direction in directions)
+                            {
+                                Node node = GetNodeInDirection(i, j, direction);
+                                if (node != null)
+                                {
+
+                                    do
+                                    {
+
+
+
+
+
+
+
+                                        node = GetNodeInDirection(node.GetNodeRow(),node.GetNodeNum(),direction)
+                                    } while (node != null && !HasTilesLimit);
+
+
+
+
+
+
+
+
+
+
+                                }
+                            }
+                           
+
+
+
+
+
+
+                        }
+
+
+
+
+
+
+
+
+
+                    }
+                }
+            }
+            
+
+         
+
+
+
+
+            return AllPosibileActions;
+        }
+        public Node[,] GetStateNodes()
+        {
+            return boardState;
+        }
         public Tool GetToolInIndex(int row, int tile)
         {
             return boardState[row, tile].GetTool();
@@ -493,83 +952,112 @@ public class GameAI : Game
         {
             boardState[row, tile].SetTool(tool);
         }
-    }
-
-    public class Action
-    {
-      
-        Direction direction;
-        int Row, Tile;
-        int newRow, newTile;
-
-        public Action(int Row, int Tile, Direction direction, int numOfTiles)
+        public Node GetNodeInDirection(int i,int j ,Direction direction)
         {
-            this.direction = direction;
-            this.Row = Row;
-            this.Tile = Tile;
-
             if (direction == Direction.Right)
             {
-                newRow = Row + numOfTiles;
-                newTile = Tile;
+                if (i + 1 <= 20)
+                {
+                    return boardState[i + 1, j];
+                }
+                else return null;
             }
             else if (direction == Direction.Left)
             {
-                newRow = Row - numOfTiles;
-                newTile = Tile;
+                if (i - 1 >= 1)
+                {
+                    return boardState[i - 1, j];
+                }
+                else return null;
             }
             else if (direction == Direction.Up)
             {
-                newRow = Row;
-                newTile = Tile + numOfTiles;
+                if (j + 1 <= 20)
+                {
+                    return boardState[i , j +1];
+                }
+                else return null;
             }
             else if (direction == Direction.Down)
             {
-                newRow = Row;
-                newTile = Tile - numOfTiles;
+                if (j - 1 >= 1)
+                {
+                    return boardState[i , j -1];
+                }
+                else return null;
             }
 
-
+            else return null;
         }
 
-        public int GetRow()
+        public bool isEndState()
         {
-            return Row;
-        }
-        public int GetTile()
-        {
-            return Tile;
-        }
-        public int GetNewRow()
-        {
-            return newRow;
-        }
-        public int GetNewTile()
-        {
-            return newTile;
-        }
-
-      /*  public static List<Action> GetAllPosibileActions(State state)
-        {
-            List<Action> AllPosibileActions = new List<Action>();
-
-            for (int i = 1; i < 21; i++)
+            int countPlayer1Tools = 0;
+            int countPlayer2Tools = 0;
+            foreach (Node node in boardState)
             {
-                for(int j = 1; j < 21; j++)
+                if (node.GetTool() != null)
                 {
-                    int tool;
+                    if (node.GetTool().GetRank() == 0)
+                    {
+                        continue;
+                    }
+                    else if (node.GetTool().GetID() == 2)
+                    {
+                        countPlayer2Tools++;
+                        if (node.GetFieldType() == "Player_B_Island" && node.GetTool().HasFlag())
+                        {
+                            endStateValue = 1000000;
+                            return true;
+                        }
+                    }
+                    else if (node.GetTool().GetID() == 1)
+                    {
+                        countPlayer1Tools++;
+                        if (node.GetFieldType() == "Player_A_Island" && node.GetTool().HasFlag())
+                        {
+                            endStateValue = -1000000;
+                            return true;
+                        }
+                    }
+
+
                 }
             }
 
+            if(countPlayer1Tools == 0 || countPlayer2Tools == 0)
+            {
+                endStateValue = 0;
+                return true;
+            }
+            if (countPlayer1Tools == 0)
+            {
+                endStateValue = 1000000;
+                return true;
+            }
+            else if (countPlayer2Tools == 0)
+            {
+                endStateValue = -1000000;
+                return true;
+            }
 
+            else return false;
+        }
+        
+        
 
-
-
-            return AllPosibileActions;
-        }*/
-
+        public int GetendStateValue()
+        {
+            return endStateValue;
+        }
+        public int GetHeurisitic()
+        {
+            return heuristic;
+        }
 
 
 
     }
+
+   
 }
