@@ -420,6 +420,13 @@ public class GameAI : Game
                             this.Loaded.Add(tool);
                         }
                     }
+                    else
+                    {
+                        CanBeLoad = true;
+                        this.LoadCapability = 0;
+                        this.Loaded = new List<Tool>();
+
+                     }
                 
                
 
@@ -431,6 +438,10 @@ public class GameAI : Game
             public int GetRank()
             {
                 return rank;
+            }
+            public int GetLoadCapability()
+            {
+                return LoadCapability;
             }
             public Game.Type GetToolType()
             {
@@ -546,12 +557,14 @@ public class GameAI : Game
             Direction direction;
             int Row, Tile;
             int newRow, newTile;
+            Tool LoadedTool;
 
-            public Action(int Row, int Tile, Direction direction, int numOfTiles)
+            public Action(int Row, int Tile, Direction direction, int numOfTiles,Tool LoadedTool)
             {
                 this.direction = direction;
                 this.Row = Row;
                 this.Tile = Tile;
+                this.LoadedTool = LoadedTool;
 
                 if (direction == Direction.Right)
                 {
@@ -593,7 +606,10 @@ public class GameAI : Game
             {
                 return newTile;
             }
-
+            public Tool GetLoadedTool()
+            {
+                return LoadedTool;
+            }
 
 
 
@@ -805,47 +821,66 @@ public class GameAI : Game
 
         public void ExcuteAction(Action action)
         {
-            if(boardState[action.GetNewRow(),action.GetNewTile()].GetTool() == null)
+            if (action.GetLoadedTool() == null)
             {
-                SetToolInIndex(action.GetNewRow(), action.GetNewTile(), boardState[action.GetRow(), action.GetTile()].GetTool());
-                SetToolInIndex(action.GetRow(), action.GetTile(), null);
-            }
-            else
-            {
-                if(boardState[action.GetNewRow(), action.GetNewTile()].GetTool().GetID() != boardState[action.GetRow(), action.GetTile()].GetTool().GetID())
+                if (boardState[action.GetNewRow(), action.GetNewTile()].GetTool() == null)
                 {
-                    if(boardState[action.GetNewRow(), action.GetNewTile()].GetTool().GetRank() == 0)
+                    SetToolInIndex(action.GetNewRow(), action.GetNewTile(), boardState[action.GetRow(), action.GetTile()].GetTool());
+                    SetToolInIndex(action.GetRow(), action.GetTile(), null);
+                }
+                else
+                {
+                    if (boardState[action.GetNewRow(), action.GetNewTile()].GetTool().GetID() != boardState[action.GetRow(), action.GetTile()].GetTool().GetID())
                     {
-                        boardState[action.GetRow(), action.GetTile()].GetTool().LoadTool(boardState[action.GetNewRow(), action.GetNewTile()].GetTool());
-                        SetToolInIndex(action.GetNewRow(), action.GetNewTile(), boardState[action.GetRow(), action.GetTile()].GetTool());
-                        SetToolInIndex(action.GetRow(), action.GetTile(), null);
-                    }
-                    else if(boardState[action.GetNewRow(), action.GetNewTile()].GetTool().GetRank() == boardState[action.GetRow(), action.GetTile()].GetTool().GetRank())
-                    {
-                        SetToolInIndex(action.GetNewRow(), action.GetNewTile(),null);
-                        SetToolInIndex(action.GetRow(), action.GetTile(), null);
-                    }
-                    else
-                    {
-                        if(boardState[action.GetNewRow(), action.GetNewTile()].GetTool().GetRank() > boardState[action.GetRow(), action.GetTile()].GetTool().GetRank())
+                        if (boardState[action.GetNewRow(), action.GetNewTile()].GetTool().GetRank() == 0)
                         {
+                            boardState[action.GetRow(), action.GetTile()].GetTool().LoadTool(boardState[action.GetNewRow(), action.GetNewTile()].GetTool());
                             SetToolInIndex(action.GetNewRow(), action.GetNewTile(), boardState[action.GetRow(), action.GetTile()].GetTool());
+                            SetToolInIndex(action.GetRow(), action.GetTile(), null);
+                        }
+                        else if (boardState[action.GetNewRow(), action.GetNewTile()].GetTool().GetRank() == boardState[action.GetRow(), action.GetTile()].GetTool().GetRank())
+                        {
+                            SetToolInIndex(action.GetNewRow(), action.GetNewTile(), null);
                             SetToolInIndex(action.GetRow(), action.GetTile(), null);
                         }
                         else
                         {
-                            
-                            SetToolInIndex(action.GetRow(), action.GetTile(), null);
-                        }
-                    }
+                            if (boardState[action.GetNewRow(), action.GetNewTile()].GetTool().GetRank() > boardState[action.GetRow(), action.GetTile()].GetTool().GetRank())
+                            {
+                                SetToolInIndex(action.GetNewRow(), action.GetNewTile(), boardState[action.GetRow(), action.GetTile()].GetTool());
+                                SetToolInIndex(action.GetRow(), action.GetTile(), null);
+                            }
+                            else
+                            {
 
-                    
-                }
-                else
-                {
-                    
+                                SetToolInIndex(action.GetRow(), action.GetTile(), null);
+                            }
+                        }
+
+
+                    }
+                    else
+                    {
+
+                    }
                 }
             }
+
+
+
+            else
+            {
+
+
+
+
+
+
+
+            }
+
+
+
         }
 
 
@@ -858,21 +893,22 @@ public class GameAI : Game
             {
                 for (int j = 1; j < 21; j++)
                 {
-                    if (boardState[i, j].GetTool() != null)
+                    Node node = boardState[i, j];
+                    if (node.GetTool() != null)
                     {
 
 
 
 
 
-                        if (boardState[i, j].GetTool().GetID() != PlayerTurnID || boardState[i, j].GetTool().GetRank() == 0)
+                        if (node.GetTool().GetID() != PlayerTurnID || node.GetTool().GetRank() == 0)
                         {
                             continue;
                         }
 
                         else
                         {
-                            if(boardState[i, j].GetTool().GetRank() == 1 || boardState[i, j].GetTool().GetRank() == 2)
+                            if(node.GetTool().GetRank() == 1 || node.GetTool().GetRank() == 2)
                             {
                                 HasTilesLimit = false;
                             }
@@ -884,29 +920,65 @@ public class GameAI : Game
 
                            foreach(Direction direction in directions)
                             {
-                                Node node = GetNodeInDirection(i, j, direction);
+                                Node toMoveNode = GetNodeInDirection(i, j, direction);
                                 if (node != null)
                                 {
-
+                                    int count = 0;
                                     do
                                     {
+                                        count++;
+                                        
+
+                                        if(toMoveNode.GetTool() == null)
+                                        {
+                                            if(toMoveNode.GetTileType() == node.GetTileType() || node.GetTool().GetToolType() == Type.Both)
+                                            {
+                                                AllPosibileActions.Add(new Action(node.GetNodeRow(), node.GetNodeNum(), direction, count, null));
+                                            }
+                                            else
+                                            {
+                                                break;
+                                            }
+                                        }
+                                        else
+                                        {
+
+                                            if(toMoveNode.GetTool().GetID() != node.GetTool().GetID())
+                                            {
+
+                                                if(toMoveNode.GetTileType() == node.GetTileType())
+                                                {
+                                                    AllPosibileActions.Add(new Action(node.GetNodeRow(), node.GetNodeNum(), direction, count, null));
+                                                    break;
+                                                }
+                                                else
+                                                {
+                                                    break;
+                                                }
+
+
+                                            }
+
+                                            else
+                                            {
+
+                                                if(node.GetTool().CanBeLoaded() && toMoveNode.GetTool().GetToolType() != Type.Land && toMoveNode.GetTool().GetLoadedTools().Count +1 <= toMoveNode.GetTool().GetLoadCapability())
+                                                {
+                                                    AllPosibileActions.Add(new Action(node.GetNodeRow(), node.GetNodeNum(), direction, count, null));
+                                                    break;
+                                                }
+                                                else
+                                                {
+                                                    break;
+                                                }
 
 
 
+                                            }
 
-
-
-
-                                        node = GetNodeInDirection(node.GetNodeRow(), node.GetNodeNum(), direction);
-                                    } while (node != null && !HasTilesLimit);
-
-
-
-
-
-
-
-
+                                        }
+                                        toMoveNode = GetNodeInDirection(toMoveNode.GetNodeRow(),toMoveNode.GetNodeNum(), direction);
+                                    } while (toMoveNode != null && !HasTilesLimit);
 
 
                                 }
@@ -923,9 +995,65 @@ public class GameAI : Game
 
 
 
+                        if(node.GetTool().GetLoadedTools().Count > 0)
+                        {
+
+                            foreach(Tool loadedTool in node.GetTool().GetLoadedTools())
+                            {
+
+                                foreach(Direction direction in directions)
+                                {
+                                    Node toMoveNode = GetNodeInDirection(node.GetNodeRow(),node.GetNodeNum(), direction);
+
+                                    if(toMoveNode != null)
+                                    {
+
+                                        if(toMoveNode.GetTool() == null)
+                                        {
+                                            if(toMoveNode.GetTileType() == loadedTool.GetToolType())
+                                            {
+                                                AllPosibileActions.Add(new Action(node.GetNodeRow(), node.GetNodeNum(), direction, 1, loadedTool));
+                                            }
+                                        }
+
+                                        else
+                                        {
+
+                                            if(toMoveNode.GetTool().GetID() == loadedTool.GetID())
+                                            {
+                                                
+                                                if(loadedTool.CanBeLoaded() && toMoveNode.GetTool().GetToolType() != Type.Land && toMoveNode.GetTool().GetLoadedTools().Count+1 <= toMoveNode.GetTool().GetLoadCapability())
+                                                {
+                                                    AllPosibileActions.Add(new Action(node.GetNodeRow(), node.GetNodeNum(), direction, 1, loadedTool));
+                                                }
+
+                                            }
+
+
+                                            else
+                                            {
+
+                                                if(toMoveNode.GetTileType() == loadedTool.GetToolType())
+                                                {
+                                                    AllPosibileActions.Add(new Action(node.GetNodeRow(), node.GetNodeNum(), direction, 1, loadedTool));
+                                                }
 
 
 
+
+                                            }
+
+                                        }
+
+                                    }
+                                        
+                                }
+
+
+                            }
+
+
+                        }
 
 
                     }
@@ -933,13 +1061,15 @@ public class GameAI : Game
             }
             
 
-         
-
-
-
-
+        
             return AllPosibileActions;
+
         }
+
+
+
+
+
         public Node[,] GetStateNodes()
         {
             return boardState;
