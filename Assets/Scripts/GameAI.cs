@@ -117,74 +117,320 @@ public class GameAI : Game
         Tile currentTile = FindTile(Action.GetRow(),Action.GetTile());
         Tile tileToMove = FindTile(Action.GetNewRow(), Action.GetNewTile());
         ClickedTile = currentTile;
+        Loader = ClickedTile.GetCurrentStepingGameTool();
         TileToWalk = tileToMove;
+        if (Action.GetLoadedTool() != null)
+        {
+            ClickedLoadedTool = Loader.GetComponentInParent<Loading>().GetLoadedToolsList()[Action.GetLoadedToolIndex()];
+        }
+        else
+        {
+            Loader = null;
+            ClickedLoadedTool = null;
+        }
         ClickedTile.SetWalkedTile();
         TileToWalk.SetWalkedTile();
         WalkedTiles.Add(ClickedTile);
         WalkedTiles.Add(TileToWalk);
-        if (tileToMove.GetRowNum() > currentTile.GetRowNum())
-        {
-            direction = Direction.Right;
-        }
-        else if (tileToMove.GetRowNum() < currentTile.GetRowNum())
-        {
-            direction = Direction.Left;
-        }
-        else if (tileToMove.GetTileNum() > currentTile.GetTileNum())
-        {
-            direction = Direction.Up;
-        }
-        else if (tileToMove.GetTileNum() < currentTile.GetTileNum())
-        {
-            direction = Direction.Down;
-        }
 
-        int tilesToPass;
-        if (direction == Direction.Right || direction == Direction.Left)
+        if (ClickedLoadedTool == null)
         {
-            tilesToPass = Mathf.Abs(currentTile.GetRowNum() - tileToMove.GetRowNum());
-        }
-        else
-        {
-            tilesToPass = Mathf.Abs(currentTile.GetTileNum() - tileToMove.GetTileNum());
-        }
-
-        if (tileToMove.GetCurrentStepingGameTool() != null)
-        {
-            if (tileToMove.GetCurrentStepingGameTool().GetToolsPlayerId() != TurnPlayerID)
+            if (tileToMove.GetRowNum() > currentTile.GetRowNum())
             {
-                if (tileToMove.GetCurrentStepingGameTool().gameObject.transform.parent.tag != "Flag")
-                {
-                    Battle(currentTile.GetCurrentStepingGameTool(), tileToMove.GetCurrentStepingGameTool(), tileToMove, direction, tilesToPass);
-                }
-                else
-                {
-                    
-                    currentTile.GetCurrentStepingGameTool().GetComponentInParent<Loading>().Load(tileToMove.GetCurrentStepingGameTool(), tileToMove);
-                    currentTile.GetCurrentStepingGameTool().gameObject.GetComponent<ToolMovement>().MoveTo(direction, tilesToPass);
-                    tileToMove.SetCurrentStepingGameTool(currentTile.GetCurrentStepingGameTool());
-                    currentTile.SetCurrentStepingGameTool(null);
-                }
+                direction = Direction.Right;
+            }
+            else if (tileToMove.GetRowNum() < currentTile.GetRowNum())
+            {
+                direction = Direction.Left;
+            }
+            else if (tileToMove.GetTileNum() > currentTile.GetTileNum())
+            {
+                direction = Direction.Up;
+            }
+            else if (tileToMove.GetTileNum() < currentTile.GetTileNum())
+            {
+                direction = Direction.Down;
+            }
+
+            int tilesToPass;
+            if (direction == Direction.Right || direction == Direction.Left)
+            {
+                tilesToPass = Mathf.Abs(currentTile.GetRowNum() - tileToMove.GetRowNum());
             }
             else
             {
-                tileToMove.GetCurrentStepingGameTool().GetComponentInParent<Loading>().Load(currentTile.GetCurrentStepingGameTool(),currentTile);
+                tilesToPass = Mathf.Abs(currentTile.GetTileNum() - tileToMove.GetTileNum());
             }
 
+            if (tileToMove.GetCurrentStepingGameTool() != null)
+            {
+                if (tileToMove.GetCurrentStepingGameTool().GetToolsPlayerId() != TurnPlayerID)
+                {
+                    if (tileToMove.GetCurrentStepingGameTool().gameObject.transform.parent.tag != "Flag")
+                    {
+                        Battle(currentTile.GetCurrentStepingGameTool(), tileToMove.GetCurrentStepingGameTool(), tileToMove, direction, tilesToPass);
+                    }
+                    else
+                    {
+
+                        currentTile.GetCurrentStepingGameTool().GetComponentInParent<Loading>().Load(tileToMove.GetCurrentStepingGameTool(), tileToMove);
+                        currentTile.GetCurrentStepingGameTool().gameObject.GetComponent<ToolMovement>().MoveTo(direction, tilesToPass);
+                        tileToMove.SetCurrentStepingGameTool(currentTile.GetCurrentStepingGameTool());
+                        currentTile.SetCurrentStepingGameTool(null);
+                    }
+                }
+                else
+                {
+                    tileToMove.GetCurrentStepingGameTool().GetComponentInParent<Loading>().Load(currentTile.GetCurrentStepingGameTool(), currentTile);
+                }
+
+            }
+            else
+            {
+
+
+
+
+
+                currentTile.GetCurrentStepingGameTool().gameObject.GetComponent<ToolMovement>().MoveTo(direction, tilesToPass);
+                tileToMove.SetCurrentStepingGameTool(currentTile.GetCurrentStepingGameTool());
+                currentTile.SetCurrentStepingGameTool(null);
+
+            }
         }
+
         else
         {
 
 
 
 
-            
-            currentTile.GetCurrentStepingGameTool().gameObject.GetComponent<ToolMovement>().MoveTo(direction, tilesToPass);
-            tileToMove.SetCurrentStepingGameTool(currentTile.GetCurrentStepingGameTool());
-            currentTile.SetCurrentStepingGameTool(null);
+
+
+
+
+            if (tileToMove.GetCurrentStepingGameTool() == null)
+            {
+                DeactivateTileMovementOptions();
+                ResetCanBeClickedTiles();
+                Loader.GetComponentInParent<Loading>().UnLoad(ClickedLoadedTool, tileToMove);
+                PassTurn();
+            }
+            else if (tileToMove.GetCurrentStepingGameTool().GetToolsPlayerId() == ClickedLoadedTool.GetToolsPlayerId())
+            {
+                DeactivateTileMovementOptions();
+                ResetCanBeClickedTiles();
+                Loader.GetComponentInParent<Loading>().UnLoad(ClickedLoadedTool);
+                tileToMove.GetCurrentStepingGameTool().GetComponentInParent<Loading>().Load(ClickedLoadedTool);
+            }
+            else if (tileToMove.GetCurrentStepingGameTool().GetToolsPlayerId() != ClickedLoadedTool.GetToolsPlayerId())
+            {
+                DeactivateTileMovementOptions();
+                ResetCanBeClickedTiles();
+
+                if (ClickedLoadedTool.GetRank() == tileToMove.GetCurrentStepingGameTool().GetRank())
+                {
+                    Loader.GetComponentInParent<Loading>().GetLoadedToolsList().Remove(ClickedLoadedTool);
+                    if (ClickedLoadedTool.GetToolsPlayerId() == 1)
+                    {
+                        Player1Tools.Remove(ClickedLoadedTool);
+                        Player2Tools.Remove(tileToMove.GetCurrentStepingGameTool());
+                        foreach (GameTool tool in ClickedLoadedTool.GetComponentInParent<Loading>().GetLoadedToolsList())
+                        {
+                            if (tool.GetName() == "Flag")
+                            {
+                                Player2Tools.Remove(tool);
+                            }
+                            else
+                            {
+                                if (tool.GetComponentInParent<Loading>().HasEnemyFlag())
+                                {
+                                    Player2Tools.Remove(tool.GetComponentInParent<Loading>().GetLoadedToolsList()[0]);
+                                }
+                                Player1Tools.Remove(tool);
+                            }
+                        }
+
+                        foreach (GameTool tool in tileToMove.GetCurrentStepingGameTool().GetComponentInParent<Loading>().GetLoadedToolsList())
+                        {
+                            if (tool.GetName() == "Flag")
+                            {
+                                Player1Tools.Remove(tool);
+                            }
+                            else
+                            {
+                                if (tool.GetComponentInParent<Loading>().HasEnemyFlag())
+                                {
+                                    Player1Tools.Remove(tool.GetComponentInParent<Loading>().GetLoadedToolsList()[0]);
+                                }
+                                Player2Tools.Remove(tool);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Player2Tools.Remove(ClickedLoadedTool);
+                        Player1Tools.Remove(tileToMove.GetCurrentStepingGameTool());
+
+
+                        foreach (GameTool tool in ClickedLoadedTool.GetComponentInParent<Loading>().GetLoadedToolsList())
+                        {
+                            if (tool.GetName() == "Flag")
+                            {
+                                Player1Tools.Remove(tool);
+                            }
+                            else
+                            {
+                                if (tool.GetComponentInParent<Loading>().HasEnemyFlag())
+                                {
+                                    Player1Tools.Remove(tool.GetComponentInParent<Loading>().GetLoadedToolsList()[0]);
+                                }
+                                Player2Tools.Remove(tool);
+                            }
+                        }
+
+                        foreach (GameTool tool in tileToMove.GetCurrentStepingGameTool().GetComponentInParent<Loading>().GetLoadedToolsList())
+                        {
+                            if (tool.GetName() == "Flag")
+                            {
+                                Player2Tools.Remove(tool);
+                            }
+                            else
+                            {
+                                if (tool.GetComponentInParent<Loading>().HasEnemyFlag())
+                                {
+                                    Player2Tools.Remove(tool.GetComponentInParent<Loading>().GetLoadedToolsList()[0]);
+                                }
+                                Player1Tools.Remove(tool);
+                            }
+                        }
+                    }
+
+
+                    GameObject.Destroy(ClickedLoadedTool.gameObject.transform.parent.gameObject);
+                    GameObject.Destroy(tileToMove.GetCurrentStepingGameTool().gameObject.transform.parent.gameObject);
+                    tileToMove.SetCurrentStepingGameTool(null);
+                    PassTurn();
+
+
+                }
+                else if (tileToMove.GetCurrentStepingGameTool().GetName() == "Flag")
+                {
+                    ClickedLoadedTool.GetComponentInParent<Loading>().Load(tileToMove.GetCurrentStepingGameTool(), tileToMove);
+                    Loader.GetComponentInParent<Loading>().UnLoad(ClickedLoadedTool, tileToMove);
+                    PassTurn();
+                }
+                else if (ClickedLoadedTool.GetRank() <= tileToMove.GetCurrentStepingGameTool().GetRank())
+                {
+                    Loader.GetComponentInParent<Loading>().GetLoadedToolsList().Remove(ClickedLoadedTool);
+                    if (ClickedLoadedTool.GetToolsPlayerId() == 1)
+                    {
+                        Player1Tools.Remove(ClickedLoadedTool);
+                        foreach (GameTool tool in ClickedLoadedTool.GetComponentInParent<Loading>().GetLoadedToolsList())
+                        {
+                            if (tool.GetName() == "Flag")
+                            {
+                                Player2Tools.Remove(tool);
+                            }
+                            else
+                            {
+                                if (tool.GetComponentInParent<Loading>().HasEnemyFlag())
+                                {
+                                    Player2Tools.Remove(tool.GetComponentInParent<Loading>().GetLoadedToolsList()[0]);
+                                }
+                                Player1Tools.Remove(tool);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Player2Tools.Remove(ClickedLoadedTool);
+                        foreach (GameTool tool in ClickedLoadedTool.GetComponentInParent<Loading>().GetLoadedToolsList())
+                        {
+                            if (tool.GetName() == "Flag")
+                            {
+                                Player1Tools.Remove(tool);
+                            }
+                            else
+                            {
+                                if (tool.GetComponentInParent<Loading>().HasEnemyFlag())
+                                {
+                                    Player1Tools.Remove(tool.GetComponentInParent<Loading>().GetLoadedToolsList()[0]);
+                                }
+                                Player2Tools.Remove(tool);
+                            }
+                        }
+                    }
+                    GameObject.Destroy(ClickedLoadedTool.gameObject.transform.parent.gameObject);
+                    PassTurn();
+
+
+                }
+
+                else if (ClickedLoadedTool.GetRank() >= tileToMove.GetCurrentStepingGameTool().GetRank())
+                {
+                    Debug.Log("ClickedLoadedTool stronger");
+                    if (ClickedLoadedTool.GetToolsPlayerId() == 1)
+                    {
+                        Player2Tools.Remove(tileToMove.GetCurrentStepingGameTool());
+                        foreach (GameTool tool in tileToMove.GetCurrentStepingGameTool().GetComponentInParent<Loading>().GetLoadedToolsList())
+
+                        {
+                            if (tool.GetName() == "Flag")
+                            {
+                                Player1Tools.Remove(tool);
+                            }
+                            else
+                            {
+                                if (tool.GetComponentInParent<Loading>().HasEnemyFlag())
+                                {
+                                    Player1Tools.Remove(tool.GetComponentInParent<Loading>().GetLoadedToolsList()[0]);
+                                }
+                                Player2Tools.Remove(tool);
+                            }
+                        }
+                        GameObject.Destroy(tileToMove.GetCurrentStepingGameTool().gameObject.transform.parent.gameObject);
+                        tileToMove.SetCurrentStepingGameTool(null);
+                        Loader.GetComponentInParent<Loading>().UnLoad(ClickedLoadedTool, tileToMove);
+                        PassTurn();
+                    }
+
+                    else
+                    {
+                        Player1Tools.Remove(tileToMove.GetCurrentStepingGameTool());
+
+                        foreach (GameTool tool in tileToMove.GetCurrentStepingGameTool().GetComponentInParent<Loading>().GetLoadedToolsList())
+
+                        {
+                            if (tool.GetName() == "Flag")
+                            {
+                                Player2Tools.Remove(tool);
+                            }
+                            else
+                            {
+                                if (tool.GetComponentInParent<Loading>().HasEnemyFlag())
+                                {
+                                    Player2Tools.Remove(tool.GetComponentInParent<Loading>().GetLoadedToolsList()[0]);
+                                }
+                                Player1Tools.Remove(tool);
+                            }
+                        }
+
+                        GameObject.Destroy(tileToMove.GetCurrentStepingGameTool().gameObject.transform.parent.gameObject);
+                        tileToMove.SetCurrentStepingGameTool(null);
+                        Loader.GetComponentInParent<Loading>().UnLoad(ClickedLoadedTool, tileToMove);
+                        PassTurn();
+                    }
+                }
+            }
+
+
+
+
+
+
 
         }
-
     }
     
     
@@ -623,13 +869,15 @@ public class GameAI : Game
             int Row, Tile;
             int newRow, newTile;
             Tool LoadedTool;
+            int index;
 
-            public Action(int Row, int Tile, Direction direction, int numOfTiles,Tool LoadedTool)
+            public Action(int Row, int Tile, Direction direction, int numOfTiles,Tool LoadedTool,int index = -1)
             {
                 this.direction = direction;
                 this.Row = Row;
                 this.Tile = Tile;
                 this.LoadedTool = LoadedTool;
+                this.index = index;
 
                 if (direction == Direction.Right)
                 {
@@ -674,6 +922,10 @@ public class GameAI : Game
             public Tool GetLoadedTool()
             {
                 return LoadedTool;
+            }
+            public int GetLoadedToolIndex()
+            {
+                return index;
             }
 
 
@@ -728,7 +980,7 @@ public class GameAI : Game
 
                         if (tool.GetRank() == 1)
                         {
-                            heuristic += tool.GetID() == 2 ? 70 : -70;
+                            heuristic += tool.GetID() == 2 ? 600 : -600;
                         }
                         else if (tool.GetRank() == 2)
                         {
@@ -935,7 +1187,7 @@ public class GameAI : Game
                         }
                         else
                         {
-                            if (boardState[action.GetNewRow(), action.GetNewTile()].GetTool().GetRank() > boardState[action.GetRow(), action.GetTile()].GetTool().GetRank())
+                            if (boardState[action.GetNewRow(), action.GetNewTile()].GetTool().GetRank() < boardState[action.GetRow(), action.GetTile()].GetTool().GetRank())
                             {
                                 SetToolInIndex(action.GetNewRow(), action.GetNewTile(), boardState[action.GetRow(), action.GetTile()].GetTool());
                                 SetToolInIndex(action.GetRow(), action.GetTile(), null);
@@ -951,16 +1203,62 @@ public class GameAI : Game
                     }
                     else
                     {
+                        boardState[action.GetNewRow(), action.GetNewTile()].GetTool().LoadTool(boardState[action.GetRow(), action.GetTile()].GetTool());
+                        SetToolInIndex(action.GetRow(), action.GetTile(), null);
 
                     }
                 }
             }
 
+            
+
 
 
             else
             {
+                if (boardState[action.GetNewRow(), action.GetNewTile()].GetTool() == null)
+                {
+                    SetToolInIndex(action.GetNewRow(), action.GetNewTile(), action.GetLoadedTool());
+                    boardState[action.GetRow(), action.GetTile()].GetTool().UnLoadTool(action.GetLoadedTool());
+                }
+                else
+                {
+                    if (boardState[action.GetNewRow(), action.GetNewTile()].GetTool().GetID() != action.GetLoadedTool().GetID())
+                    {
+                        if (boardState[action.GetNewRow(), action.GetNewTile()].GetTool().GetRank() == 0)
+                        {
+                            action.GetLoadedTool().LoadTool(boardState[action.GetNewRow(), action.GetNewTile()].GetTool());
+                            SetToolInIndex(action.GetNewRow(), action.GetNewTile(), action.GetLoadedTool());
+                            boardState[action.GetRow(), action.GetTile()].GetTool().UnLoadTool(action.GetLoadedTool());
+                        }
+                        else if (boardState[action.GetNewRow(), action.GetNewTile()].GetTool().GetRank() == action.GetLoadedTool().GetRank())
+                        {
+                            SetToolInIndex(action.GetNewRow(), action.GetNewTile(), null);
+                            boardState[action.GetRow(), action.GetTile()].GetTool().UnLoadTool(action.GetLoadedTool());
+                        }
+                        else
+                        {
+                            if (boardState[action.GetNewRow(), action.GetNewTile()].GetTool().GetRank() < action.GetLoadedTool().GetRank())
+                            {
+                                SetToolInIndex(action.GetNewRow(), action.GetNewTile(), action.GetLoadedTool());
+                                boardState[action.GetRow(), action.GetTile()].GetTool().UnLoadTool(action.GetLoadedTool());
+                            }
+                            else
+                            {
 
+                                boardState[action.GetRow(), action.GetTile()].GetTool().UnLoadTool(action.GetLoadedTool());
+                            }
+                        }
+
+
+                    }
+                    else
+                    {
+                        boardState[action.GetNewRow(), action.GetNewTile()].GetTool().LoadTool(boardState[action.GetRow(), action.GetTile()].GetTool());
+                        SetToolInIndex(action.GetRow(), action.GetTile(), null);
+
+                    }
+                }
 
 
 
@@ -1102,7 +1400,7 @@ public class GameAI : Game
                                         {
                                             if(toMoveNode.GetTileType() == loadedTool.GetToolType())
                                             {
-                                                AllPosibileActions.Add(new Action(node.GetNodeRow(), node.GetNodeNum(), direction, 1, loadedTool));
+                                                AllPosibileActions.Add(new Action(node.GetNodeRow(), node.GetNodeNum(), direction, 1, loadedTool, node.GetTool().GetLoadedTools().IndexOf(loadedTool)));
                                             }
                                         }
 
@@ -1114,7 +1412,7 @@ public class GameAI : Game
                                                 
                                                 if(loadedTool.CanBeLoaded() && toMoveNode.GetTool().GetToolType() != Type.Land && toMoveNode.GetTool().GetLoadedTools().Count+1 <= toMoveNode.GetTool().GetLoadCapability())
                                                 {
-                                                    AllPosibileActions.Add(new Action(node.GetNodeRow(), node.GetNodeNum(), direction, 1, loadedTool));
+                                                    AllPosibileActions.Add(new Action(node.GetNodeRow(), node.GetNodeNum(), direction, 1, loadedTool, node.GetTool().GetLoadedTools().IndexOf(loadedTool)));
                                                 }
 
                                             }
@@ -1125,7 +1423,7 @@ public class GameAI : Game
 
                                                 if(toMoveNode.GetTileType() == loadedTool.GetToolType())
                                                 {
-                                                    AllPosibileActions.Add(new Action(node.GetNodeRow(), node.GetNodeNum(), direction, 1, loadedTool));
+                                                    AllPosibileActions.Add(new Action(node.GetNodeRow(), node.GetNodeNum(), direction, 1, loadedTool, node.GetTool().GetLoadedTools().IndexOf(loadedTool)));
                                                 }
 
 
