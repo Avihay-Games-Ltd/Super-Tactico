@@ -37,7 +37,10 @@ public class GameAI : Game
         cameraRotation = GameObject.FindGameObjectWithTag("CameraController").GetComponent<CameraRotation>();
         cameraRotation.ResetPlayerTool(1);
         cameraRotation.ResetPlayerTool(2);
-        GameUI.gameObject.transform.Find("PlayerTurnText").gameObject.GetComponent<TMPro.TMP_Text>().text = "Randomize Tools Set Session";
+        PlayerTurn = GameUI.gameObject.transform.Find("PlayerTurnText").gameObject.GetComponent<TMPro.TMP_Text>();
+        PlayerTurn.text = "Randomize Tools Set Session";
+        GameLog = GameUI.gameObject.transform.Find("GameLog").gameObject.GetComponent<TMPro.TMP_Text>();
+        GameLog.text = "";
     }
     protected override void GameOverCheck()
     {

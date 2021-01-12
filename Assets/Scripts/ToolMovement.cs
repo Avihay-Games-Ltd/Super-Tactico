@@ -92,6 +92,7 @@ public class ToolMovement : MonoBehaviour
             current = Game.Direction.None;
             game.GetClickedTile().SetCurrentStepingGameTool(null);
             game.GetTileToWalk().SetCurrentStepingGameTool(GetComponent<GameTool>());
+            transform.parent.transform.position = game.GetTileToWalk().transform.position;
             game.PassTurn();
         }
     }
@@ -114,6 +115,7 @@ public class ToolMovement : MonoBehaviour
             current = Game.Direction.None;
             game.GetClickedTile().SetCurrentStepingGameTool(null);
             game.GetTileToWalk().SetCurrentStepingGameTool(GetComponent<GameTool>());
+            transform.parent.transform.position = game.GetTileToWalk().transform.position;
             game.PassTurn();
         }
     }
@@ -137,6 +139,7 @@ public class ToolMovement : MonoBehaviour
             current = Game.Direction.None;
             game.GetClickedTile().SetCurrentStepingGameTool(null);
             game.GetTileToWalk().SetCurrentStepingGameTool(GetComponent<GameTool>());
+            transform.parent.transform.position = game.GetTileToWalk().transform.position;
             game.PassTurn();
         }
     }
@@ -160,6 +163,7 @@ public class ToolMovement : MonoBehaviour
             current = Game.Direction.None;
             game.GetClickedTile().SetCurrentStepingGameTool(null);
             game.GetTileToWalk().SetCurrentStepingGameTool(GetComponent<GameTool>());
+            transform.parent.transform.position = game.GetTileToWalk().transform.position;
             game.PassTurn();
         }
     }

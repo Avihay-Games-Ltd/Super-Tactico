@@ -84,6 +84,8 @@ public abstract class Game
     [SerializeField]
     protected GameObject[] Tools;
     [SerializeField]
+    protected TMPro.TMP_Text PlayerTurn;
+    protected TMPro.TMP_Text GameLog;
     protected GameObject GameUI;
     protected Tile ClickedTile;
     protected Tile TileToWalk;
@@ -759,10 +761,15 @@ public abstract class Game
                     {
                         DeactivateTileMovementOptions();
                         ResetCanBeClickedTiles();
+                        GameLog.text = ClickedTile.GetCurrentStepingGameTool().GetName() + " of " + ClickedTile.GetCurrentStepingGameTool().GetArmy() + " Loaded the " + tile.GetCurrentStepingGameTool().GetArmy() + " Flag";
                         ClickedTile.GetCurrentStepingGameTool().GetComponentInParent<Loading>().Load(tile.GetCurrentStepingGameTool(), tile);
                         ClickedTile.GetCurrentStepingGameTool().gameObject.GetComponent<ToolMovement>().MoveTo(direction, tilesToPass);
                         tile.SetCurrentStepingGameTool(ClickedTile.GetCurrentStepingGameTool());
                         ClickedTile.SetCurrentStepingGameTool(null);
+
+                        
+
+
                     }
                 }
                 else
@@ -780,9 +787,9 @@ public abstract class Game
 
                 DeactivateTileMovementOptions();
                 ResetCanBeClickedTiles();
+                Tile tile1 = ClickedTile, tile2 = tile;
                 ClickedTile.GetCurrentStepingGameTool().gameObject.GetComponent<ToolMovement>().MoveTo(direction, tilesToPass);
-                tile.SetCurrentStepingGameTool(ClickedTile.GetCurrentStepingGameTool());
-                ClickedTile.SetCurrentStepingGameTool(null);
+               
 
             }
         }

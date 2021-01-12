@@ -29,7 +29,10 @@ public class GameOnSameComputer : Game
         cameraRotation = GameObject.FindGameObjectWithTag("CameraController").GetComponent<CameraRotation>();
         cameraRotation.ResetPlayerTool(1);
         cameraRotation.ResetPlayerTool(2);
-        GameUI.gameObject.transform.Find("PlayerTurnText").gameObject.GetComponent<TMPro.TMP_Text>().text = "Randomize Tools Set Session";
+        PlayerTurn = GameUI.gameObject.transform.Find("PlayerTurnText").gameObject.GetComponent<TMPro.TMP_Text>();
+        PlayerTurn.text = "Randomize Tools Set Session";
+        GameLog = GameUI.gameObject.transform.Find("GameLog").gameObject.GetComponent<TMPro.TMP_Text>();
+         GameLog.text = "";
     }
 
     
@@ -37,12 +40,12 @@ public class GameOnSameComputer : Game
     {
         if (TurnPlayerID == 1)
         {
-            GameUI.gameObject.transform.Find("PlayerTurnText").gameObject.GetComponent<TMPro.TMP_Text>().text = "Turn of US army";
+            PlayerTurn.text = "Turn of US army";
             SetCanBeClickedTiles(1);
         }
         else
         {
-            GameUI.gameObject.transform.Find("PlayerTurnText").gameObject.GetComponent<TMPro.TMP_Text>().text = "Turn of Germany army";
+            PlayerTurn.text = "Turn of Germany army";
             SetCanBeClickedTiles(2);
         }
         
