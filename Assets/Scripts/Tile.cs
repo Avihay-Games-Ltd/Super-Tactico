@@ -181,6 +181,18 @@ public class Tile : MonoBehaviour
            Material[] transparent = { regMaterial, transparent1 };
            GetComponent<MeshRenderer>().materials = transparent;
     }
+
+    public void SetWalkedTile()
+    {
+        Material[] transparent = { regMaterial, transparent1 };
+        GetComponent<MeshRenderer>().materials = transparent;
+    }
+    public void UnSetWalkedTile()
+    {
+        
+        Material[] reg = { regMaterial };
+        GetComponent<MeshRenderer>().materials = reg;
+    }
     public int GetTileNum()
     {
         return tilenum;

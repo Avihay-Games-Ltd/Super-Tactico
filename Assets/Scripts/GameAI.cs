@@ -8,6 +8,7 @@ public class GameAI : Game
 {
      List<Direction> directions = new List<Direction>();
     Dictionary<int, KeyValuePair<GameTool, List<Tile>>> AllPosibileActions;
+    List<Tile> WalkedTiles = new List<Tile>();
 
 
 
@@ -71,6 +72,11 @@ public class GameAI : Game
     {
         if(TurnPlayerID == 1)
         {
+            foreach(Tile tile in WalkedTiles)
+            {
+                tile.UnSetWalkedTile();
+            }
+            WalkedTiles.Clear();
             TurnPlayerID = 2;
             SetTurnDetails();
         }
@@ -112,6 +118,10 @@ public class GameAI : Game
         Tile tileToMove = FindTile(Action.GetNewRow(), Action.GetNewTile());
         ClickedTile = currentTile;
         TileToWalk = tileToMove;
+        ClickedTile.SetWalkedTile();
+        TileToWalk.SetWalkedTile();
+        WalkedTiles.Add(ClickedTile);
+        WalkedTiles.Add(TileToWalk);
         if (tileToMove.GetRowNum() > currentTile.GetRowNum())
         {
             direction = Direction.Right;
