@@ -761,12 +761,10 @@ public abstract class Game
                     {
                         DeactivateTileMovementOptions();
                         ResetCanBeClickedTiles();
-                        GameLog.text = ClickedTile.GetCurrentStepingGameTool().GetName() + " of " + ClickedTile.GetCurrentStepingGameTool().GetArmy() + " Loaded the " + tile.GetCurrentStepingGameTool().GetArmy() + " Flag";
+                        GameLog.text = ClickedTile.GetCurrentStepingGameTool().GetName() + " of " + ClickedTile.GetCurrentStepingGameTool().GetArmy() + " army loaded the " + tile.GetCurrentStepingGameTool().GetArmy() + " army Flag";
                         ClickedTile.GetCurrentStepingGameTool().GetComponentInParent<Loading>().Load(tile.GetCurrentStepingGameTool(), tile);
                         ClickedTile.GetCurrentStepingGameTool().gameObject.GetComponent<ToolMovement>().MoveTo(direction, tilesToPass);
-                        tile.SetCurrentStepingGameTool(ClickedTile.GetCurrentStepingGameTool());
-                        ClickedTile.SetCurrentStepingGameTool(null);
-
+                 
                         
 
 
@@ -774,6 +772,7 @@ public abstract class Game
                 }
                 else
                 {
+                    GameLog.text = ClickedTile.GetCurrentStepingGameTool().GetName() + " of " + ClickedTile.GetCurrentStepingGameTool().GetArmy() + "army loaded to " + tile.GetCurrentStepingGameTool().GetName();
                     tile.GetCurrentStepingGameTool().GetComponentInParent<Loading>().Load(ClickedTile.GetCurrentStepingGameTool(), ClickedTile);
                     
                 }
@@ -789,7 +788,7 @@ public abstract class Game
                 ResetCanBeClickedTiles();
                 Tile tile1 = ClickedTile, tile2 = tile;
                 ClickedTile.GetCurrentStepingGameTool().gameObject.GetComponent<ToolMovement>().MoveTo(direction, tilesToPass);
-               
+                GameLog.text = ClickedTile.GetCurrentStepingGameTool().GetName() + " of " + ClickedTile.GetCurrentStepingGameTool().GetArmy() + " army moved "+direction.ToString()+" to an empty tile";
 
             }
         }
@@ -799,6 +798,7 @@ public abstract class Game
             {
                 DeactivateTileMovementOptions();
                 ResetCanBeClickedTiles();
+                GameLog.text =ClickedLoadedTool.GetName() + " of " + ClickedLoadedTool.GetArmy() + " army landed from "+  ClickedTile.GetCurrentStepingGameTool().GetName()+" on an empty tile";
                 Loader.GetComponentInParent<Loading>().UnLoad(ClickedLoadedTool, tile);
                 PassTurn();
             }
@@ -806,6 +806,7 @@ public abstract class Game
             {
                 DeactivateTileMovementOptions();
                 ResetCanBeClickedTiles();
+                GameLog.text = ClickedLoadedTool.GetName() + " of " + ClickedLoadedTool.GetArmy() + " army moved from " + ClickedTile.GetCurrentStepingGameTool().GetName() + " to "+tile.GetCurrentStepingGameTool().GetName();
                 Loader.GetComponentInParent<Loading>().UnLoad(ClickedLoadedTool);
                 tile.GetCurrentStepingGameTool().GetComponentInParent<Loading>().Load(ClickedLoadedTool);
             }
@@ -895,6 +896,9 @@ public abstract class Game
                     
                     GameObject.Destroy(ClickedLoadedTool.gameObject.transform.parent.gameObject);
                     GameObject.Destroy(tile.GetCurrentStepingGameTool().gameObject.transform.parent.gameObject);
+
+                    GameLog.text = ClickedLoadedTool.GetName() + " of " + ClickedLoadedTool.GetArmy() + " army  from " + ClickedTile.GetCurrentStepingGameTool().GetName() + " attacked " + tile.GetCurrentStepingGameTool().GetName() +" from "+tile.GetCurrentStepingGameTool().GetArmy()+" army and they both die";
+
                     tile.SetCurrentStepingGameTool(null);
                     PassTurn();
 
@@ -902,6 +906,7 @@ public abstract class Game
                 }
                 else if(tile.GetCurrentStepingGameTool().GetName() == "Flag")
                 {
+                    GameLog.text = ClickedLoadedTool.GetName() + " of " + ClickedLoadedTool.GetArmy() + " army  from " + ClickedTile.GetCurrentStepingGameTool().GetName() + " loaded " +tile.GetCurrentStepingGameTool().GetArmy()+" army Flag";
                     ClickedLoadedTool.GetComponentInParent<Loading>().Load(tile.GetCurrentStepingGameTool(), tile);
                     Loader.GetComponentInParent<Loading>().UnLoad(ClickedLoadedTool, tile);
                     PassTurn();
@@ -948,6 +953,7 @@ public abstract class Game
                         }
                     }
                     GameObject.Destroy(ClickedLoadedTool.gameObject.transform.parent.gameObject);
+                    GameLog.text = ClickedLoadedTool.GetName() + " of " + ClickedLoadedTool.GetArmy() + " army  from " + ClickedTile.GetCurrentStepingGameTool().GetName() + " attacked " + tile.GetCurrentStepingGameTool().GetName() + " from " + tile.GetCurrentStepingGameTool().GetArmy() + " army and they has been defeated";
                     PassTurn();
 
 
@@ -1003,8 +1009,10 @@ public abstract class Game
                         }
 
                         GameObject.Destroy(tile.GetCurrentStepingGameTool().gameObject.transform.parent.gameObject);
+                        GameLog.text = ClickedLoadedTool.GetName() + " of " + ClickedLoadedTool.GetArmy() + " army  from " + ClickedTile.GetCurrentStepingGameTool().GetName() + " attacked " + tile.GetCurrentStepingGameTool().GetName() + " from " + tile.GetCurrentStepingGameTool().GetArmy() + " army and defeat it";
                         tile.SetCurrentStepingGameTool(null);
                         Loader.GetComponentInParent<Loading>().UnLoad(ClickedLoadedTool,tile);
+
                         PassTurn();
                     }
                 }
@@ -1091,7 +1099,8 @@ public abstract class Game
                     }
                 }
             }
-            
+
+            GameLog.text = AttackTool.GetName() + " of " + AttackTool.GetArmy() + " army  attacked " + DefendTool.GetName() + " from " + DefendTool.GetArmy() + " army and they both die";
             ClickedTile.SetCurrentStepingGameTool(null);
             DefendToolTile.SetCurrentStepingGameTool(null);
 
@@ -1142,6 +1151,7 @@ public abstract class Game
                 Player1Tools.Remove(DefendTool);
             }
 
+            GameLog.text = AttackTool.GetName() + " of " + AttackTool.GetArmy() + " army  attacked " + DefendTool.GetName() + " from " + DefendTool.GetArmy() + " army and defeat it";
             DefendToolTile.SetCurrentStepingGameTool(null);
             GameObject.Destroy(DefendTool.gameObject.transform.parent.gameObject);
             
