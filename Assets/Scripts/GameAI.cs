@@ -104,8 +104,9 @@ public class GameAI : Game
 
     private void AI_Play()
     {
-        State.Action Action = Minimax();
-        
+        List<State.Action> Actions = Minimax();
+        State.Action Action = Actions[Random.Range(0, Actions.Count)];
+        Debug.Log(" ( " + Action.GetNewRow() + " , " + Action.GetNewTile() + ")  ( " + Action.GetNewRow() + " , " + Action.GetNewTile() + " )");
         Direction direction = Direction.None;
         Tile currentTile = FindTile(Action.GetRow(),Action.GetTile());
         Tile tileToMove = FindTile(Action.GetNewRow(), Action.GetNewTile());
@@ -300,26 +301,80 @@ public class GameAI : Game
 
 
 
-    public  State.Action Minimax()
+    public  List<State.Action> Minimax()
     {
         int depth = 1;
         State state = new State(board);
         int MaxAction = -Mathf.RoundToInt(Mathf.Infinity);
         State.Action Action = null;
+        int alpha = -Mathf.RoundToInt(Mathf.Infinity);
+        int beta = Mathf.RoundToInt(Mathf.Infinity);
+        List<State.Action> BestActions = new List<State.Action>();
         List<State.Action> PosibleActions = state.GetAllPosibileActions(2);
         foreach(State.Action action in PosibleActions)
         {
-            int val = Min(new State(state, action), depth + 1);
-            if( val > MaxAction)
+            int val = Eval(new State(state, action),alpha,beta, depth + 1,1);
+            if (val > MaxAction)
             {
                 MaxAction = val;
-                Action = action;
+                BestActions.Clear();
+                BestActions.Add(action);
+            }
+            else if(val == MaxAction)
+            {
+                BestActions.Add(action);
             }
         }
 
-        return Action;
+        return BestActions;
     }
-    public int Max(State state, int depth)
+
+    public int Eval(State state, int alpha, int beta, int depth, int PlayerID)
+    {
+        if (state.isEndState())
+        {
+            return state.GetendStateValue();
+        }
+
+        if (depth == 2)
+        {
+            return state.GetHeurisitic();
+        }
+
+
+
+        if (PlayerID == 1)
+        {
+            int current = beta;
+            foreach (State.Action action in state.GetAllPosibileActions(1))
+            {
+                int val = Eval(new State(state, action), alpha, current, depth + 1, 2);
+                current = Mathf.Min(current, val);
+                if (current <= alpha)
+                {
+                    return alpha;
+                }
+
+            }
+            return current;
+        }
+        else
+        {
+            int current = alpha;
+            foreach (State.Action action in state.GetAllPosibileActions(2))
+            {
+                int val = Eval(new State(state, action), current, beta, depth + 1, 1);
+                current = Mathf.Max(current, val);
+                if (current >= beta)
+                {
+                    return beta;
+                }
+
+            }
+            return current;
+        }
+    }
+   /* public int Max(State state, int depth)
     {
         Debug.Log("Min");
         if (state.isEndState())
@@ -327,7 +382,7 @@ public class GameAI : Game
             return state.GetendStateValue();
         }
 
-        if (depth == 2)
+        if (depth == 3)
         {
             return state.GetHeurisitic();
         }
@@ -352,7 +407,7 @@ public class GameAI : Game
             return state.GetendStateValue();
         }
 
-        if(depth == 2)
+        if(depth == 3)
         {
             return state.GetHeurisitic();
         }
@@ -369,7 +424,7 @@ public class GameAI : Game
         }
 
         return MinAction;
-    }
+    }*/
 
 
 
@@ -651,79 +706,82 @@ public class GameAI : Game
             }
 
 
-            foreach (Node node in this.boardState)
+            for (int i = 1; i < 21; i++)
             {
-                Tool tool = node.GetTool();
-                if (tool != null)
+
+                for (int j = 1; j < 21; j++)
                 {
+                    Tool tool = boardState[i, j].GetTool();
+                    if (tool != null)
+                    {
 
 
-                    if (tool.GetRank() == 1)
-                    {
-                        heuristic += tool.GetID() == 2 ? 70 : -70;
-                    }
-                    else if (tool.GetRank() == 2)
-                    {
-                        heuristic += tool.GetID() == 2 ? 100 : -100;
-                    }
-                    else if (tool.GetToolType() == Type.Land && tool.GetRank() == 3)
-                    {
-                        heuristic += tool.GetID() == 2 ? 30 : -30;
-                    }
-                    else if (tool.GetToolType() == Type.Land && tool.GetRank() == 4)
-                    {
-                        heuristic += tool.GetID() == 2 ? 40 : -40;
-                    }
-                    else if (tool.GetToolType() == Type.Land && tool.GetRank() == 5)
-                    {
-                        heuristic += tool.GetID() == 2 ? 60 : -60;
-                    }
-                    else if (tool.GetToolType() == Type.Land && tool.GetRank() == 6)
-                    {
-                        heuristic += tool.GetID() == 2 ? 80 : -80;
-                    }
-                    else if (tool.GetToolType() == Type.Sea && tool.GetRank() == 3)
-                    {
-                        heuristic += tool.GetID() == 2 ? 30 : -30;
-                    }
-                    else if (tool.GetToolType() == Type.Sea && tool.GetRank() == 4)
-                    {
-                        heuristic += tool.GetID() == 2 ? 80 : -80;
-                    }
-                    else if (tool.GetToolType() == Type.Sea && tool.GetRank() == 5)
-                    {
-                        heuristic += tool.GetID() == 2 ? 120 : -120;
-                    }
-                    else if (tool.GetToolType() == Type.Sea && tool.GetRank() == 6)
-                    {
-                        heuristic += tool.GetID() == 2 ? 180 : -180;
-                    }
-                    else if (tool.GetRank() == 7)
-                    {
-                        heuristic += tool.GetID() == 2 ? 200 : -200;
-                    }
-                    else if (tool.GetRank() == 8)
-                    {
-                        heuristic += tool.GetID() == 2 ? 300 : -300;
-                    }
-                    else if (tool.GetRank() == 9)
-                    {
-                        heuristic += tool.GetID() == 2 ? 400 : -400;
-                    }
-                    else if (tool.GetRank() == 10)
-                    {
-                        heuristic += tool.GetID() == 2 ? 600 : -600;
-                    }
+                        if (tool.GetRank() == 1)
+                        {
+                            heuristic += tool.GetID() == 2 ? 70 : -70;
+                        }
+                        else if (tool.GetRank() == 2)
+                        {
+                            heuristic += tool.GetID() == 2 ? 100 : -100;
+                        }
+                        else if (tool.GetToolType() == Type.Land && tool.GetRank() == 3)
+                        {
+                            heuristic += tool.GetID() == 2 ? 30 : -30;
+                        }
+                        else if (tool.GetToolType() == Type.Land && tool.GetRank() == 4)
+                        {
+                            heuristic += tool.GetID() == 2 ? 40 : -40;
+                        }
+                        else if (tool.GetToolType() == Type.Land && tool.GetRank() == 5)
+                        {
+                            heuristic += tool.GetID() == 2 ? 60 : -60;
+                        }
+                        else if (tool.GetToolType() == Type.Land && tool.GetRank() == 6)
+                        {
+                            heuristic += tool.GetID() == 2 ? 80 : -80;
+                        }
+                        else if (tool.GetToolType() == Type.Sea && tool.GetRank() == 3)
+                        {
+                            heuristic += tool.GetID() == 2 ? 30 : -30;
+                        }
+                        else if (tool.GetToolType() == Type.Sea && tool.GetRank() == 4)
+                        {
+                            heuristic += tool.GetID() == 2 ? 80 : -80;
+                        }
+                        else if (tool.GetToolType() == Type.Sea && tool.GetRank() == 5)
+                        {
+                            heuristic += tool.GetID() == 2 ? 120 : -120;
+                        }
+                        else if (tool.GetToolType() == Type.Sea && tool.GetRank() == 6)
+                        {
+                            heuristic += tool.GetID() == 2 ? 180 : -180;
+                        }
+                        else if (tool.GetRank() == 7)
+                        {
+                            heuristic += tool.GetID() == 2 ? 200 : -200;
+                        }
+                        else if (tool.GetRank() == 8)
+                        {
+                            heuristic += tool.GetID() == 2 ? 300 : -300;
+                        }
+                        else if (tool.GetRank() == 9)
+                        {
+                            heuristic += tool.GetID() == 2 ? 400 : -400;
+                        }
+                        else if (tool.GetRank() == 10)
+                        {
+                            heuristic += tool.GetID() == 2 ? 600 : -600;
+                        }
 
 
 
 
-                    if (tool.HasFlag())
-                    {
-                        heuristic += tool.GetID() == 2 ? 1500 : -1500;
+                        if (tool.HasFlag())
+                        {
+                            heuristic += tool.GetID() == 2 ? 1500 : -1500;
+                        }
                     }
                 }
-
 
             }
         }
@@ -732,88 +790,110 @@ public class GameAI : Game
             this.boardState = new Node[21, 21];
             for (int i = 1; i < 21; i++)
             {
+                string str = "";
                 for (int j = 1; j < 21; j++)
                 {
                     this.boardState[i, j] = new Node(state.boardState[i, j].GetTool(), state.boardState[i, j].GetTileType(), state.boardState[i, j].GetFieldType(),i,j);
+                    if(boardState[i, j].GetTool() == null)
+                    {
+                        str += "null ";
+                    }
+                    else str += boardState[i, j].GetTool() + " ";
                 }
+                Debug.Log(str);
             }
 
             this.ExcuteAction(action);
 
-
-            foreach (Node node in this.boardState)
+            for (int i = 1; i < 21; i++)
             {
-                Tool tool = node.GetTool();
-                if (tool != null)
+                string str = "";
+                for (int j = 1; j < 21; j++)
                 {
+                    if (boardState[i, j].GetTool() == null)
+                    {
+                        str += "null ";
+                    }
+                    else str += boardState[i, j].GetTool() + " ";
+                }
+                Debug.Log(str);
+            }
+            for (int i = 1; i < 21; i++)
+            {
+
+                for (int j = 1; j < 21; j++)
+                {
+                    Tool tool = boardState[i,j].GetTool();
+                    if (tool != null)
+                    {
 
 
-                    if (tool.GetRank() == 1)
-                    {
-                        heuristic += tool.GetID() == 2 ? 70 : -70;
-                    }
-                    else if (tool.GetRank() == 2)
-                    {
-                        heuristic += tool.GetID() == 2 ? 100 : -100;
-                    }
-                    else if (tool.GetToolType() == Type.Land && tool.GetRank() == 3)
-                    {
-                        heuristic += tool.GetID() == 2 ? 30 : -30;
-                    }
-                    else if (tool.GetToolType() == Type.Land && tool.GetRank() == 4)
-                    {
-                        heuristic += tool.GetID() == 2 ? 40 : -40;
-                    }
-                    else if (tool.GetToolType() == Type.Land && tool.GetRank() == 5)
-                    {
-                        heuristic += tool.GetID() == 2 ? 60 : -60;
-                    }
-                    else if (tool.GetToolType() == Type.Land && tool.GetRank() == 6)
-                    {
-                        heuristic += tool.GetID() == 2 ? 80 : -80;
-                    }
-                    else if (tool.GetToolType() == Type.Sea && tool.GetRank() == 3)
-                    {
-                        heuristic += tool.GetID() == 2 ? 30 : -30;
-                    }
-                    else if (tool.GetToolType() == Type.Sea && tool.GetRank() == 4)
-                    {
-                        heuristic += tool.GetID() == 2 ? 80 : -80;
-                    }
-                    else if (tool.GetToolType() == Type.Sea && tool.GetRank() == 5)
-                    {
-                        heuristic += tool.GetID() == 2 ? 120 : -120;
-                    }
-                    else if (tool.GetToolType() == Type.Sea && tool.GetRank() == 6)
-                    {
-                        heuristic += tool.GetID() == 2 ? 180 : -180;
-                    }
-                    else if (tool.GetRank() == 7)
-                    {
-                        heuristic += tool.GetID() == 2 ? 200 : -200;
-                    }
-                    else if (tool.GetRank() == 8)
-                    {
-                        heuristic += tool.GetID() == 2 ? 300 : -300;
-                    }
-                    else if (tool.GetRank() == 9)
-                    {
-                        heuristic += tool.GetID() == 2 ? 400 : -400;
-                    }
-                    else if (tool.GetRank() == 10)
-                    {
-                        heuristic += tool.GetID() == 2 ? 600 : -600;
-                    }
+                        if (tool.GetRank() == 1)
+                        {
+                            heuristic += tool.GetID() == 2 ? 70 : -70;
+                        }
+                        else if (tool.GetRank() == 2)
+                        {
+                            heuristic += tool.GetID() == 2 ? 100 : -100;
+                        }
+                        else if (tool.GetToolType() == Type.Land && tool.GetRank() == 3)
+                        {
+                            heuristic += tool.GetID() == 2 ? 30 : -30;
+                        }
+                        else if (tool.GetToolType() == Type.Land && tool.GetRank() == 4)
+                        {
+                            heuristic += tool.GetID() == 2 ? 40 : -40;
+                        }
+                        else if (tool.GetToolType() == Type.Land && tool.GetRank() == 5)
+                        {
+                            heuristic += tool.GetID() == 2 ? 60 : -60;
+                        }
+                        else if (tool.GetToolType() == Type.Land && tool.GetRank() == 6)
+                        {
+                            heuristic += tool.GetID() == 2 ? 80 : -80;
+                        }
+                        else if (tool.GetToolType() == Type.Sea && tool.GetRank() == 3)
+                        {
+                            heuristic += tool.GetID() == 2 ? 30 : -30;
+                        }
+                        else if (tool.GetToolType() == Type.Sea && tool.GetRank() == 4)
+                        {
+                            heuristic += tool.GetID() == 2 ? 80 : -80;
+                        }
+                        else if (tool.GetToolType() == Type.Sea && tool.GetRank() == 5)
+                        {
+                            heuristic += tool.GetID() == 2 ? 120 : -120;
+                        }
+                        else if (tool.GetToolType() == Type.Sea && tool.GetRank() == 6)
+                        {
+                            heuristic += tool.GetID() == 2 ? 180 : -180;
+                        }
+                        else if (tool.GetRank() == 7)
+                        {
+                            heuristic += tool.GetID() == 2 ? 200 : -200;
+                        }
+                        else if (tool.GetRank() == 8)
+                        {
+                            heuristic += tool.GetID() == 2 ? 300 : -300;
+                        }
+                        else if (tool.GetRank() == 9)
+                        {
+                            heuristic += tool.GetID() == 2 ? 400 : -400;
+                        }
+                        else if (tool.GetRank() == 10)
+                        {
+                            heuristic += tool.GetID() == 2 ? 600 : -600;
+                        }
 
 
 
 
-                    if (tool.HasFlag())
-                    {
-                        heuristic += tool.GetID() == 2 ? 1500 : -1500;
+                        if (tool.HasFlag())
+                        {
+                            heuristic += tool.GetID() == 2 ? 1500 : -1500;
+                        }
                     }
                 }
-
 
             }
         }
@@ -921,7 +1001,7 @@ public class GameAI : Game
                            foreach(Direction direction in directions)
                             {
                                 Node toMoveNode = GetNodeInDirection(i, j, direction);
-                                if (node != null)
+                                if (toMoveNode != null)
                                 {
                                     int count = 0;
                                     do
@@ -1124,34 +1204,38 @@ public class GameAI : Game
         {
             int countPlayer1Tools = 0;
             int countPlayer2Tools = 0;
-            foreach (Node node in boardState)
+            for(int i=1;i<21;i++)
             {
-                if (node.GetTool() != null)
+                for (int j = 1; j < 21; j++)
                 {
-                    if (node.GetTool().GetRank() == 0)
+                    Node node = boardState[i, j];
+                    if (node.GetTool() != null)
                     {
-                        continue;
-                    }
-                    else if (node.GetTool().GetID() == 2)
-                    {
-                        countPlayer2Tools++;
-                        if (node.GetFieldType() == "Player_B_Island" && node.GetTool().HasFlag())
+                        if (node.GetTool().GetRank() == 0)
                         {
-                            endStateValue = 1000000;
-                            return true;
+                            continue;
                         }
-                    }
-                    else if (node.GetTool().GetID() == 1)
-                    {
-                        countPlayer1Tools++;
-                        if (node.GetFieldType() == "Player_A_Island" && node.GetTool().HasFlag())
+                        else if (node.GetTool().GetID() == 2)
                         {
-                            endStateValue = -1000000;
-                            return true;
+                            countPlayer2Tools++;
+                            if (node.GetFieldType() == "Player_B_Island" && node.GetTool().HasFlag())
+                            {
+                                endStateValue = 1000000;
+                                return true;
+                            }
                         }
-                    }
+                        else if (node.GetTool().GetID() == 1)
+                        {
+                            countPlayer1Tools++;
+                            if (node.GetFieldType() == "Player_A_Island" && node.GetTool().HasFlag())
+                            {
+                                endStateValue = -1000000;
+                                return true;
+                            }
+                        }
 
 
+                    }
                 }
             }
 

@@ -121,15 +121,20 @@ public class Loading : MonoBehaviour
         Debug.Log(gameTool.transform.position);
         if (gameTool.GetName() != "Flag")
         {
-            
+
             loadedGameTools.Add(gameTool);
 
             if (loadFrom != null)
             {
                 loadFrom.SetCurrentStepingGameTool(null);
             }
-         Debug.Log(gameTool.transform.position);
-            gameTool.gameObject.transform.localScale = Vector3.zero;
+            Debug.Log(gameTool.transform.position);
+            foreach (Transform child in gameTool.gameObject.transform.parent)
+            { 
+
+            child.gameObject.transform.localScale = Vector3.zero;
+
+            }
             //gameTool.gameObject.transform.parent.position = transform.parent.position;
             //gameTool.gameObject.transform.parent.parent = transform.parent;
             gameTool.GetComponentInParent<Loading>().SetLoader(GetComponentInParent<GameTool>());
@@ -144,7 +149,12 @@ public class Loading : MonoBehaviour
                 loadFrom.SetCurrentStepingGameTool(null);
             }
 
-            gameTool.gameObject.transform.localScale = Vector3.zero;
+            foreach (Transform child in gameTool.gameObject.transform.parent)
+            {
+
+                child.gameObject.transform.localScale = Vector3.zero;
+
+            }
             //gameTool.gameObject.transform.parent.position = transform.parent.position;
             //gameTool.gameObject.transform.parent.parent = transform.parent;
             HasFlag = true;
@@ -157,11 +167,18 @@ public class Loading : MonoBehaviour
      {
         if (gameTool.GetName().Contains("Boat"))
         {
+            foreach (Transform child in gameTool.gameObject.transform.parent)
+            {
+                child.gameObject.transform.localScale = Vector3.one * 1.5f;
+            }
             gameTool.gameObject.transform.localScale = Vector3.one * 0.5f;
-
         }
         else
         {
+            foreach (Transform child in gameTool.gameObject.transform.parent)
+            {
+                child.gameObject.transform.localScale = Vector3.one * 1.5f;
+            }
             gameTool.gameObject.transform.localScale = Vector3.one * 1.4f;
         }
         //gameTool.gameObject.transform.parent.parent = null;

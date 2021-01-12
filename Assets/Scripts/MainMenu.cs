@@ -20,11 +20,13 @@ public class MainMenu : MonoBehaviour
 
     public void StartPlayerVSPlayerGame()
     {
+        Board.ResetBoard();
         Game.SetGameType(Game.GameType.GameOnSameComputer);
         SceneManager.LoadScene("Tactico");
     }
     public void StartPlayerVSComGame()
     {
+        Board.ResetBoard();
         Game.SetGameType(Game.GameType.GameAI);
         SceneManager.LoadScene("Tactico");
     }

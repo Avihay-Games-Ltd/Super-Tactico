@@ -893,7 +893,12 @@ public abstract class Game
 
 
                 }
-                
+                else if(tile.GetCurrentStepingGameTool().GetName() == "Flag")
+                {
+                    ClickedLoadedTool.GetComponentInParent<Loading>().Load(tile.GetCurrentStepingGameTool(), tile);
+                    Loader.GetComponentInParent<Loading>().UnLoad(ClickedLoadedTool, tile);
+                    PassTurn();
+                }
                 else if(ClickedLoadedTool.GetRank() <= tile.GetCurrentStepingGameTool().GetRank())
                 {
                     Loader.GetComponentInParent<Loading>().GetLoadedToolsList().Remove(ClickedLoadedTool);
